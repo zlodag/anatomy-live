@@ -1,0 +1,5 @@
+<ol>
+	<li *ngFor="let item of items | async" routerLinkActive="active">
+	  	<a [routerLink]="item.id">{{item.name}}</a>
+	</li>
+</ol>
