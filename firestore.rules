@@ -1,0 +1,25 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /regions/{region} {
+      allow read: if true;
+      allow create: if request.resource.data.size() == 1
+      	&& 'ts' in request.resource.data
+        && request.resource.data.ts is timestamp
+        && request.resource.data.ts == request.time;
+    }
+    match /items/{item} {
+      allow read: if true;
+    	allow create: if request.resource.data.size() == 2
+      	&& request.resource.data.keys().hasAll(['ts', 'region'])
+        && request.resource.data.ts is timestamp
+        && request.resource.data.ts == request.time
+        && request.resource.data.region is string
+        && exists(/databases/$(database)/documents/regions/$(request.resource.data.region))
+    }
+    match /details/{item} {
+    	allow read: if true;
+      allow write: if exists(/databases/$(database)/documents/items/$(item))
+      	&& request.writeFields.size() == 1;
+    }
+  }
+}

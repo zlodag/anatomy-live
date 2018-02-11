@@ -8,6 +8,9 @@
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
+    "deploy": "firebase deploy",
+    "predeploy": "npm run build",
+    "prebuild": "npm run lint",
     "e2e": "ng e2e"
   },
   "private": true,
