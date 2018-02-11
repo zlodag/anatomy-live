@@ -1,9 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
-import { Observable } from 'rxjs/Observable';
-import { Item } from '../models';
-import 'rxjs/add/operator/switchMap';
 
 @Component({
   selector: 'app-item-detail',
@@ -12,12 +8,14 @@ import 'rxjs/add/operator/switchMap';
 })
 export class ItemDetailComponent implements OnInit {
 
-  item: Observable<Item>;
-
-  constructor(private readonly afs: AngularFirestore, public route: ActivatedRoute) { }
+  constructor(public route: ActivatedRoute) { }
 
   ngOnInit() {
-  	this.item = this.route.paramMap.switchMap(paramMap => this.afs.doc<Item>('/items/' + paramMap.get('itemId')).valueChanges());
+  	// this.item = this.route.paramMap.switchMap(paramMap => this.afs.doc<Details>('/details/' + paramMap.get('itemId')).valueChanges());
+  	// this.route.paramMap.switchMap(paramMap => this.afs.doc<Item>('/items/' + paramMap.get('itemId')).ref.get()).subscribe(snap => {
+  	// 	console.log(snap.data());
+  	// });
   }
+
 
 }

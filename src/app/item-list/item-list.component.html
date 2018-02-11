@@ -1,5 +1,6 @@
-<ol>
-	<li *ngFor="let item of items | async" routerLinkActive="active">
-	  	<a [routerLink]="item.id">{{item.name}}</a>
+<ul class="list-unstyled">
+	<li *ngFor="let item of route.snapshot.data.items" routerLinkActive="active">
+	  	<a [routerLink]="item">{{item}}</a>
 	</li>
-</ol>
+	<li *ngIf="editState.edit"><app-add-string label="item" (onNewString)="newItem($event)"></app-add-string></li>
+</ul>

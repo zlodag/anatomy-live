@@ -1,4 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { AngularFireModule } from 'angularfire2';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
@@ -8,13 +9,27 @@ import { environment } from '../environments/environment';
 import { AppComponent } from './app.component';
 import { RegionDetailComponent } from './region-detail/region-detail.component';
 import { RegionListComponent } from './region-list/region-list.component';
-import { RegionResolver } from './region-resolver.service';
+import { RegionListResolver, ItemListResolver } from './resolvers.service';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
 import { ItemListComponent } from './item-list/item-list.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { RegionComponent } from './region/region.component';
+import { RegionsComponent } from './regions/regions.component';
+import { ItemComponent } from './item/item.component';
+import { FieldFilterPipe } from './field-filter.pipe';
+import { AddStringComponent } from './add-string/add-string.component';
 
 const appRoutes: Routes = [
   {
+    path: '',
+    component: DashboardComponent,
+  },
+  {
     path: 'regions',
+    component: RegionsComponent,
+    resolve: {
+      regions: RegionListResolver
+    },
     children: [
       {
         path: '',
@@ -22,28 +37,28 @@ const appRoutes: Routes = [
       },
       {
         path: ':regionId',
-        component: RegionDetailComponent,
+        component: RegionComponent,
         resolve: {
-          region: RegionResolver
+          items: ItemListResolver
         },
         children: [
           {
             path: '',
-            component: ItemListComponent,
+            component: ItemListComponent
           },
           {
             path: ':itemId',
-            component: ItemDetailComponent
+            component: ItemComponent
           }
         ]
       }
     ]
-  },
-  {
-    path: '',
-    redirectTo: 'regions',
-    pathMatch: 'full'
   }
+  // {
+  //   path: '',
+  //   redirectTo: 'regions',
+  //   pathMatch: 'full'
+  // }
 ];
 
 @NgModule({
@@ -52,15 +67,25 @@ const appRoutes: Routes = [
     RegionDetailComponent,
     RegionListComponent,
     ItemDetailComponent,
-    ItemListComponent
+    ItemListComponent,
+    DashboardComponent,
+    RegionComponent,
+    RegionsComponent,
+    ItemComponent,
+    FieldFilterPipe,
+    AddStringComponent
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     RouterModule.forRoot(appRoutes, { enableTracing: false })
   ],
-  providers: [RegionResolver],
+  providers: [
+    RegionListResolver,
+    ItemListResolver
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

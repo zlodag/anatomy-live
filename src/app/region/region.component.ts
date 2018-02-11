@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-region-detail',
-  templateUrl: './region-detail.component.html',
-  styleUrls: ['./region-detail.component.css']
+  selector: 'app-region',
+  templateUrl: './region.component.html',
+  styleUrls: ['./region.component.css']
 })
-export class RegionDetailComponent implements OnInit {
+export class RegionComponent implements OnInit {
 
   constructor(public route: ActivatedRoute) { }
 

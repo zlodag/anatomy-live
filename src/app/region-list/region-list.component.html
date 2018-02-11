@@ -1,5 +1,5 @@
 <ol>
-	<li *ngFor="let region of regions | async" routerLinkActive="active">
-	  	<a [routerLink]="region.id">{{region.name}}</a>
+	<li *ngFor="let region of route.snapshot.data.regions" routerLinkActive="active">
+	  	<a [routerLink]="region">{{region}}</a>
 	</li>
 </ol>
