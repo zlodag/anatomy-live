@@ -1,5 +1,12 @@
-<ol>
-	<li *ngFor="let region of route.snapshot.data.regions" routerLinkActive="active">
+<nav>
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+		<li class="breadcrumb-item active">Regions</li>
+	</ol>
+</nav>
+<ul class="list-unstyled">
+	<li *ngFor="let region of regions | async" routerLinkActive="active">
 	  	<a [routerLink]="region">{{region}}</a>
 	</li>
-</ol>
+	<li *ngIf="editState.edit"><app-add-string label="region" (newString)="newRegion($event)"></app-add-string></li>
+</ul>

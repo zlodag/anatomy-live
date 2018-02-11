@@ -9,20 +9,20 @@ export class AddStringComponent implements OnInit {
 
   constructor() { }
 
+  @Input() label: string;
+
+  @Output() newString = new EventEmitter<string>();
+
   ngOnInit() {
   }
 
-  @Input() label : string;
-
-  @Output() onNewString = new EventEmitter<string>();
-
   getNewString = () => {
-  	let s = prompt(`Add ${this.label}`);
-  	if (s) {
-  		s = s.trim();
-  		if (s) {
-  			this.onNewString.emit(s);
-  		}
-  	}
-  };
+    let s = prompt(`Add ${this.label}`);
+    if (s) {
+      s = s.trim();
+      if (s) {
+        this.newString.emit(s);
+      }
+    }
+  }
 }

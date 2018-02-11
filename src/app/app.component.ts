@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { EditStateService } from './edit-state.service';
 
 @Component({
   selector: 'app-root',
@@ -6,6 +7,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  constructor() {
+  constructor(public editState: EditStateService) {
   }
 }

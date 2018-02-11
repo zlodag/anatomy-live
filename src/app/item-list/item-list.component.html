@@ -1,6 +1,13 @@
+<nav>
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+		<li class="breadcrumb-item"><a routerLink="/regions">Regions</a></li>
+		<li class="breadcrumb-item active">{{ route.snapshot.paramMap.get('regionId') }}</li>
+	</ol>
+</nav>
 <ul class="list-unstyled">
-	<li *ngFor="let item of route.snapshot.data.items" routerLinkActive="active">
+	<li *ngFor="let item of items | async" routerLinkActive="active">
 	  	<a [routerLink]="item">{{item}}</a>
 	</li>
-	<li *ngIf="editState.edit"><app-add-string label="item" (onNewString)="newItem($event)"></app-add-string></li>
+	<li *ngIf="editState.edit"><app-add-string label="item" (newString)="newItem($event)"></app-add-string></li>
 </ul>

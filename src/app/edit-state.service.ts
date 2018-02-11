@@ -4,6 +4,6 @@ import { Injectable } from '@angular/core';
 export class EditStateService {
 
   constructor() { }
-  public edit: boolean = false;
-  
+  public edit = false;
+
 }

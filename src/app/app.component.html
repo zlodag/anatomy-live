@@ -1,5 +1,4 @@
 <div class="container">
-	<!-- <h3>Anatomy</h3> -->
-	<h1><a routerLink=".">Anatomy</a></h1>
+	<button type="button" class="btn btn-outline-warning btn-sm float-right" [ngClass]="{active: editState.edit}" (click)="editState.edit = !editState.edit">Edit</button>
 	<router-outlet></router-outlet>
 </div>
