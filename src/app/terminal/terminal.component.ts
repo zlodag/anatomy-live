@@ -1,8 +1,13 @@
-import {NgModule,Component,AfterViewInit,AfterViewChecked,OnDestroy,Input,Output,EventEmitter,ElementRef} from '@angular/core';
+import {NgModule,Component,OnInit, AfterViewInit,AfterViewChecked,OnDestroy,Input,Output,EventEmitter,ElementRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {TerminalService} from './terminal.service';
 import {Subscription}   from 'rxjs/Subscription';
+
+interface Line {
+	text: string;
+	command: boolean;
+}
 
 @Component({
     selector: 'anatomy-terminal',
@@ -10,7 +15,7 @@ import {Subscription}   from 'rxjs/Subscription';
 	styleUrls: ['./terminal.component.css'],
 	providers: [TerminalService]
 })
-export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestroy {
+export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,OnDestroy {
 
     @Input() welcomeMessage: string;
 
@@ -20,22 +25,26 @@ export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestr
         
     @Input() styleClass: string;
             
-    lines: any[] = [];
+    lines: Line[] = [];
     
     command: string;
     
     container: Element;
     
-    commandProcessed: boolean;
+    scrollToBottom: boolean;
     
-    subscription: Subscription;
+    responseSubscription: Subscription;
     
     constructor(public el: ElementRef, public terminalService: TerminalService) {
-        this.subscription = terminalService.responseHandler.subscribe(response => {
+    }
+
+    ngOnInit(){
+        this.responseSubscription = this.terminalService.responseHandler.subscribe(response => {
             // this.lines[this.lines.length - 1].response = response;
-            this.lines.push({text: response});
-            this.commandProcessed = true;
+            this.lines.push({text: response, command: false});
+            this.scrollToBottom = true;
         });
+        this.terminalService.testAll();
     }
 
     ngAfterViewInit() {
@@ -44,24 +53,17 @@ export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestr
     }
     
     ngAfterViewChecked() {
-        if(this.commandProcessed) {
+        if(this.scrollToBottom) {
             this.container.scrollTop = this.container.scrollHeight;
-            this.commandProcessed = false;
+            this.scrollToBottom = false;
         }
     }
 
-    // @Input()
-    // set response(value: string) {
-    //     if(value) {
-    //         this.lines[this.lines.length - 1].response = value;
-    //         this.commandProcessed = true;
-    //     }
-    // }
-    
     handleCommand(event: KeyboardEvent) {
         if(event.keyCode == 13) {
-            this.lines.push({text: this.command});
+            this.lines.push({text: this.command, command: true});
             this.terminalService.sendCommand(this.command);
+            // this.terminalService.sendResponse('You said ' + this.command);
             this.command = '';
         }
     }
@@ -71,8 +73,8 @@ export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestr
     }
     
     ngOnDestroy() {
-        if(this.subscription) {
-            this.subscription.unsubscribe();
+        if(this.responseSubscription) {
+            this.responseSubscription.unsubscribe();
         }
     }
     

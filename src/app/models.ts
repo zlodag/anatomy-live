@@ -9,37 +9,46 @@ export interface Item {
   region: string;
 }
 
-export const DETAIL_FIELDS = [
-  'Introduction',
-  'Structure',
-  'Superior relations',
-  'Inferior relations',
-  'Anterior relations',
-  'Posterior relations',
-  'Medial relations',
-  'Lateral relations',
+export interface DetailField {
+    key: string;
+    shortcut: string;
+}
 
-  'Superior boundary',
-  'Inferior boundary',
-  'Anterior boundary',
-  'Posterior boundary',
-  'Medial boundary',
-  'Lateral boundary',
-  'Contents',
-  'Articulations',
-  'Attachments',
-  'Special structures',
-  'Nerve supply',
-  'Arterial supply',
-  'Venous drainage',
-  'Lymphatic drainage',
-  'Variants'
+export const DETAIL_FIELDS: DetailField[] = [
+  {key: 'Introduction', shortcut: 'in'},
+  {key: 'Structure', shortcut: 'st'},
+
+  {key: 'Superior relations', shortcut: 'sr'},
+  {key: 'Inferior relations', shortcut: 'ir'},
+  {key: 'Anterior relations', shortcut: 'ar'},
+  {key: 'Posterior relations', shortcut: 'pr'},
+  {key: 'Medial relations', shortcut: 'mr'},
+  {key: 'Lateral relations', shortcut: 'lr'},
+
+  {key: 'Superior boundary', shortcut: 'sb'},
+  {key: 'Inferior boundary', shortcut: 'ib'},
+  {key: 'Anterior boundary', shortcut: 'ab'},
+  {key: 'Posterior boundary', shortcut: 'pb'},
+  {key: 'Medial boundary', shortcut: 'mb'},
+  {key: 'Lateral boundary', shortcut: 'lb'},
+
+  {key: 'Contents', shortcut: 'co'},
+  {key: 'Articulations', shortcut: 'ar'},
+  {key: 'Attachments', shortcut: 'at'},
+  {key: 'Special structures', shortcut: 'ss'},
+
+  {key: 'Nerve supply', shortcut: 'ns'},
+  {key: 'Arterial supply', shortcut: 'as'},
+  {key: 'Venous drainage', shortcut: 'vd'},
+  {key: 'Lymphatic drainage', shortcut: 'ld'},
+
+  {key: 'Variants', shortcut: 'va'},
 ];
 
 export interface Details {
 
-    Introduction?: string[];
-    Structure?: string[];
+    'Introduction'?: string[];
+    'Structure'?: string[];
 
     'Superior relations'?: string[];
     'Inferior relations'?: string[];
@@ -55,9 +64,9 @@ export interface Details {
     'Medial boundary'?: string[];
     'Lateral boundary'?: string[];
 
-    Contents?: string[];
-    Articulations?: string[];
-    Attachments?: string[];
+    'Contents'?: string[];
+    'Articulations'?: string[];
+    'Attachments'?: string[];
     'Special structures'?: string[];
 
     'Nerve supply'?: string[];
@@ -65,5 +74,5 @@ export interface Details {
     'Venous drainage'?: string[];
     'Lymphatic drainage'?: string[];
 
-    Variants?: string[];
+    'Variants'?: string[];
 }

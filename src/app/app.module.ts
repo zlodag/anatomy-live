@@ -17,7 +17,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
-import { FieldFilterPipe } from './field-filter.pipe';
+import { DetailFieldFilterPipe } from './detail-field-filter.pipe';
 import { AddStringComponent } from './add-string/add-string.component';
 import { QuizTerminalComponent } from './quiz-terminal/quiz-terminal.component';
 import { TerminalComponent } from './terminal/terminal.component';
@@ -72,7 +72,7 @@ const appRoutes: Routes = [
     ItemListComponent,
     ItemDetailComponent,
     AddStringComponent,
-    FieldFilterPipe,
+    DetailFieldFilterPipe,
     QuizTerminalComponent,
     TerminalComponent
   ],

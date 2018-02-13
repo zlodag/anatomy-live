@@ -7,19 +7,19 @@
 	</ol>
 </nav>
 <ul *ngIf="itemObservable | async as item" class="list-group">
-	<li *ngFor="let field of editState.edit ? DETAIL_FIELDS : (DETAIL_FIELDS | fieldFilter : item)" class="list-group-item">
+	<li *ngFor="let field of editState.edit ? DETAIL_FIELDS : (DETAIL_FIELDS | detailFieldFilter : item)" class="list-group-item">
 		<h5>
-			<span>{{ field }}</span>
-			<app-add-string *ngIf="editState.edit" [label]="field" (newString)="addEntry(field, item[field], $event)"></app-add-string>
+			<span>{{ field.key }}</span>
+			<app-add-string *ngIf="editState.edit" [label]="field.key" (newString)="addEntry(field.key, item[field.key], $event)"></app-add-string>
 		</h5>
 		<ul>
-			<li *ngFor="let entry of item[field]; index as i">
+			<li *ngFor="let entry of item[field.key]; index as i">
 				<span>{{ entry }}</span>
 				<span *ngIf="editState.edit">
-					<button pButton type="button" icon="fa-edit" class="ui-button-info" (click)="editEntry(field, item[field], i)"></button>
-					<!-- <span class="oi oi-pencil text-info pointer" (click)="editEntry(field, item[field], i)"></span> -->
-					<button pButton type="button" icon="fa-trash" class="ui-button-danger" (click)="removeEntry(field, item[field], i)"></button>
-					<!-- <span  *ngIf="editState.edit" class="oi oi-trash text-danger pointer" (click)="removeEntry(field, item[field], i)"></span> -->
+					<button pButton type="button" icon="fa-edit" class="ui-button-info" (click)="editEntry(field.key, item[field.key], i)"></button>
+					<!-- <span class="oi oi-pencil text-info pointer" (click)="editEntry(field.key, item[field.key], i)"></span> -->
+					<button pButton type="button" icon="fa-trash" class="ui-button-danger" (click)="removeEntry(field.key, item[field.key], i)"></button>
+					<!-- <span  *ngIf="editState.edit" class="oi oi-trash text-danger pointer" (click)="removeEntry(field.key, item[field.key], i)"></span> -->
 				</span>
 			</li>
 		</ul>

@@ -3,7 +3,7 @@
     <div class="anatomy-terminal-content">
         <div *ngFor="let line of lines">
             <!-- <span>{{prompt}}</span> -->
-            <span class="anatomy-terminal-command">{{line.text}}</span>
+            <span [ngClass]="{'anatomy-terminal-command':line.command}">{{line.text}}</span>
             <div>{{line.response}}</div>
         </div>
     </div>
