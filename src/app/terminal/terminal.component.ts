@@ -7,6 +7,7 @@ import {Subscription}   from 'rxjs/Subscription';
 @Component({
     selector: 'anatomy-terminal',
 	templateUrl: './terminal.component.html',
+	styleUrls: ['./terminal.component.css'],
 	providers: [TerminalService]
 })
 export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestroy {
@@ -19,7 +20,7 @@ export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestr
         
     @Input() styleClass: string;
             
-    commands: any[] = [];
+    lines: any[] = [];
     
     command: string;
     
@@ -31,14 +32,15 @@ export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestr
     
     constructor(public el: ElementRef, public terminalService: TerminalService) {
         this.subscription = terminalService.responseHandler.subscribe(response => {
-            this.commands[this.commands.length - 1].response = response;
+            // this.lines[this.lines.length - 1].response = response;
+            this.lines.push({text: response});
             this.commandProcessed = true;
         });
     }
-    
+
     ngAfterViewInit() {
         // this.container = this.domHandler.find(this.el.nativeElement, '.ui-terminal')[0];
-        this.container = this.el.nativeElement.querySelectorAll('.ui-terminal')[0];
+        this.container = this.el.nativeElement.querySelectorAll('.anatomy-terminal')[0];
     }
     
     ngAfterViewChecked() {
@@ -47,18 +49,18 @@ export class TerminalComponent implements AfterViewInit,AfterViewChecked,OnDestr
             this.commandProcessed = false;
         }
     }
-                
-    @Input()
-    set response(value: string) {
-        if(value) {
-            this.commands[this.commands.length - 1].response = value;
-            this.commandProcessed = true;
-        }
-    }
+
+    // @Input()
+    // set response(value: string) {
+    //     if(value) {
+    //         this.lines[this.lines.length - 1].response = value;
+    //         this.commandProcessed = true;
+    //     }
+    // }
     
     handleCommand(event: KeyboardEvent) {
         if(event.keyCode == 13) {
-            this.commands.push({text: this.command});
+            this.lines.push({text: this.command});
             this.terminalService.sendCommand(this.command);
             this.command = '';
         }

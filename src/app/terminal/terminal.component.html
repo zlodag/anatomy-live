@@ -1,14 +1,14 @@
-<div [ngClass]="'ui-terminal ui-widget ui-widget-content ui-corner-all'" [ngStyle]="style" [class]="styleClass" (click)="focus(in)">
+<div [ngClass]="'anatomy-terminal ui-widget ui-widget-content ui-corner-all'" [ngStyle]="style" [class]="styleClass" (click)="focus(in)">
     <div *ngIf="welcomeMessage">{{welcomeMessage}}</div>
-    <div class="ui-terminal-content">
-        <div *ngFor="let command of commands">
-            <span>{{prompt}}</span>
-            <span class="ui-terminal-command">{{command.text}}</span>
-            <div>{{command.response}}</div>
+    <div class="anatomy-terminal-content">
+        <div *ngFor="let line of lines">
+            <!-- <span>{{prompt}}</span> -->
+            <span class="anatomy-terminal-command">{{line.text}}</span>
+            <div>{{line.response}}</div>
         </div>
     </div>
     <div>
-        <span class="ui-terminal-content-prompt">{{prompt}}</span>
-        <input #in type="text" [(ngModel)]="command" class="ui-terminal-input" autocomplete="off" (keydown)="handleCommand($event)" autofocus>
+        <span class="anatomy-terminal-content-prompt">{{prompt}}</span>
+        <input #in type="text" [(ngModel)]="command" class="anatomy-terminal-input" autocomplete="off" (keydown)="handleCommand($event)" autofocus>
     </div>
 </div>
