@@ -2,10 +2,13 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from 'angularfire2/firestore';
+// import * as firestore from 'firebase/firestore';
+import { firestore } from 'firebase';
 import { Details, DetailField, DETAIL_FIELDS } from '../models';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/do';
+import { merge } from 'rxjs/observable/merge';
 import 'rxjs/add/operator/withLatestFrom';
 // import { combineLatest } from 'rxjs/observable/combineLatest';
 
@@ -14,59 +17,63 @@ export class TerminalService {
     
 
 	constructor(private readonly afs: AngularFirestore) {
-		this.commandSource.withLatestFrom(this.currentDetails).subscribe(([command, details]) => {
-			if (!details) {
-		        this.sendResponse(`No details...`);
-		        return;
-			}
-		    let match = command.match(/^(\w{2})\s+(.+)$/);
-		    if (match) {
-		    	const shortcut = match[1].toLowerCase();
-		    	for (var i = 0; i < DETAIL_FIELDS.length; i++) {
-		    		const detailField = DETAIL_FIELDS[i];
-		    		if (shortcut == detailField.shortcut){
-			    		// console.log(JSON.stringify(detailField));
-			    		// console.log('My async log is ' + JSON.stringify(details));
-		    			const itemField = details[detailField.key];
-						const tokens = match[2].split(',');
-						// console.log(`tokens: ${match[2]}`);
-						for (var i = 0; i < tokens.length; i++) {
-							const token = tokens[i].trim();
-							// console.log(`Token: ${token}`);
-							if (this.isAdequateLength(token)){
-								let found = false;
-								if (itemField) {
-									for (var j = itemField.length - 1; j >= 0; j--) {
-										if (this.tokenMatches(token, detailField.key, itemField[j])){
-											found = true;
-											itemField.splice(j, 1);
-											// console.log(`itemField is now length: ${itemField.length}`);
-											if (!itemField.length) {
-												delete details[detailField.key];
-											}
-											console.log(JSON.stringify(details));
-											this.remainder--;
-											if (!this.remainder) {
-												this.index++;
-												this.loadDetails();
-												return;
-											}
-											break;
-										}
-									}
-								}
-								if (!found) {
-		    						this.informIncorrect(token, detailField.key);
-								}
-							}
-						}
-		    			return;
-		    		}
-		    	}
-		        this.sendResponse(`Invalid key: "${shortcut}". Try "keys"`);		
-		    } else {
-		        this.sendResponse(`Invalid command: "${command}". Try "help"`);		
-		    }
+		this.currentDetails.subscribe(documentSnapshot => {
+			console.log(JSON.stringify(documentSnapshot.data()));
+		});
+
+		// this.commandSource.withLatestFrom(this.currentDetails).subscribe(([command, details]) => {
+		// 	if (!details) {
+		//         console.log(`No details...`);
+		//         return;
+		// 	}
+		//     let match = command.match(/^(\w{2})\s+(.+)$/);
+		//     if (match) {
+		//     	const shortcut = match[1].toLowerCase();
+		//     	for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+		//     		const detailField = DETAIL_FIELDS[i];
+		//     		if (shortcut == detailField.shortcut){
+		// 	    		// console.log(JSON.stringify(detailField));
+		// 	    		// console.log('My async log is ' + JSON.stringify(details));
+		//     			const itemField = details[detailField.key];
+		// 				const tokens = match[2].split(',');
+		// 				// console.log(`tokens: ${match[2]}`);
+		// 				for (var i = 0; i < tokens.length; i++) {
+		// 					const token = tokens[i].trim();
+		// 					// console.log(`Token: ${token}`);
+		// 					if (this.isAdequateLength(token)){
+		// 						let found = false;
+		// 						if (itemField) {
+		// 							for (var j = itemField.length - 1; j >= 0; j--) {
+		// 								if (this.tokenMatches(token, detailField.key, itemField[j])){
+		// 									found = true;
+		// 									itemField.splice(j, 1);
+		// 									// console.log(`itemField is now length: ${itemField.length}`);
+		// 									if (!itemField.length) {
+		// 										delete details[detailField.key];
+		// 									}
+		// 									console.log(JSON.stringify(details));
+		// 									this.remainder--;
+		// 									if (!this.remainder) {
+		// 										this.index++;
+		// 										this.loadDetails();
+		// 										return;
+		// 									}
+		// 									break;
+		// 								}
+		// 							}
+		// 						}
+		// 						if (!found) {
+		//     						this.informIncorrect(token, detailField.key);
+		// 						}
+		// 					}
+		// 				}
+		//     			return;
+		//     		}
+		//     	}
+		//         console.log(`Invalid key: "${shortcut}". Try "keys"`);		
+		//     } else {
+		//         console.log(`Invalid command: "${command}". Try "help"`);		
+		//     }
 
 // 		    let match = command.match(/^\W*(?:(cheat)\W+)?(\w{2})(?:\W+(.+))?$/);
 		    // if (match) {
@@ -104,77 +111,142 @@ export class TerminalService {
 		    // }
 // 			break;
 
-		});
+		// });
 	}
 
     private commandSource = new Subject<string>();
-    private responseSource = new Subject<string>();
+    private responseSource = new Subject<string[]>();
     
     // commandHandler = this.commandSource.asObservable();
-    responseHandler = this.responseSource.asObservable();
     
     remainder: number;
 	index = 0;
 	itemIds: string[];
-	currentId: Subject<string> = new Subject();
-	currentDetails: Observable<Details> = this.currentId.switchMap(currentId => this.afs.collection('/details').doc<Details>(currentId).valueChanges()
-		.first())
-	.do(details => {
-		let totalAnswers = 0;
-		for (let i = DETAIL_FIELDS.length - 1; i >= 0; i--) {
-			const detailField = DETAIL_FIELDS[i];
-			const itemField = details[detailField.key];
-			if (itemField) {
-				totalAnswers += itemField.length;
+	private currentId: Subject<string> = new Subject();
+	private currentDetails: Observable<firestore.DocumentSnapshot> = this.currentId.switchMap(currentId => this.afs.collection('/details').doc<Details>(currentId).ref.get());
+	promptObservable = this.currentId.asObservable();
+	// private detailWatcher: Observable<string[]> = this.currentDetails.map(documentSnapshot => {
+ //    	let lines: string[] = [];
+ //    	lines.push(`Time for a new item: ${documentSnapshot.id}`);
+ //    	return lines;
+	// });
+	// .do(details => {
+	// 	let totalAnswers = 0;
+	// 	for (let i = DETAIL_FIELDS.length - 1; i >= 0; i--) {
+	// 		const detailField = DETAIL_FIELDS[i];
+	// 		const itemField = details[detailField.key];
+	// 		if (itemField) {
+	// 			totalAnswers += itemField.length;
+	// 		}
+	// 	}
+	// 	this.remainder = totalAnswers;
+	// 	// console.log(`Loading item: "${currentId}"`);
+	// 	// console.log(`Loaded item with ${totalAnswers} answers`);
+	// 	console.log(`Loaded!`);
+	// 	console.log(JSON.stringify(details));
+	// })
+	;
+    private commandHandler : Observable<string[]> = this.commandSource.withLatestFrom(this.currentDetails).map(([command, details]) => {
+    	let lines: string[] = [];
+    	lines.push(`${details.id} > ${command}`);
+    	// lines.push(`against: ${JSON.stringify(details.data())}`);
+    	// lines.push(details.id + ' >');
+	    let match = command.match(/^(\w{2})\s+(.+)$/);
+	    if (match) {
+	    	const shortcut = match[1].toLowerCase();
+	    	for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+	    		const detailField = DETAIL_FIELDS[i];
+	    		if (shortcut == detailField.shortcut){
+	    			this.testAgainst(details.data(), detailField, lines, match[2].split(','));
+	    			break;
+	    		}
+	    	}
+	    }
+    	return lines;
+    });
+
+	responseHandler : Observable<string[]> = merge(this.responseSource, this.commandHandler);
+
+	testAgainst(details: Details, detailField: DetailField, lines: string[], tokens: string[]) {
+		const itemField = details[detailField.key];
+		// let lines = [];
+
+		// const tokens = match[2].split(',');
+		// console.log(`tokens: ${match[2]}`);
+		for (var i = 0; i < tokens.length; i++) {
+			const token = tokens[i].trim();
+			// console.log(`Token: ${token}`);
+			if (this.isAdequateLength(token, lines)){
+				let found = false;
+				if (itemField) {
+					for (var j = itemField.length - 1; j >= 0; j--) {
+						if (this.tokenMatches(token, detailField.key, itemField[j], lines)){
+							found = true;
+							itemField.splice(j, 1);
+							// console.log(`itemField is now length: ${itemField.length}`);
+							if (!itemField.length) {
+								delete details[detailField.key];
+							}
+							console.log(JSON.stringify(details));
+							if (Object.keys(details).length === 0) {
+								this.index++;
+								this.loadDetails();
+								return;
+							}
+							break;
+						}
+					}
+				}
+				if (!found) {
+					this.informIncorrect(token, detailField.key, lines);
+				}
 			}
 		}
-		this.remainder = totalAnswers;
-		// this.sendResponse(`Loading item: "${currentId}"`);
-		// this.sendResponse(`Loaded item with ${totalAnswers} answers`);
-		this.sendResponse(`Loaded!`);
-		console.log(JSON.stringify(details));
-	})
-	;
+	}
 
-	isAdequateLength(token){
+	isAdequateLength(token, lines){
 		if (token.length <= 2) {
-	        this.sendResponse(`✘ Entry must be 3 or more characters: "${token}"`);		
+			lines.push(`✘ Entry must be 3 or more characters: "${token}"`);
+	        console.log(`✘ Entry must be 3 or more characters: "${token}"`);		
 			return false;
 		}
 		return true;
 	}
 
-	tokenMatches(token, label, answer) {
+	tokenMatches(token, label, answer, lines) {
 		const indexStart = answer.toLowerCase().indexOf(token.toLowerCase());
 		if (indexStart != -1) {
-			this.informCorrect(answer, indexStart, indexStart + token.length, label);
+			this.informCorrect(answer, indexStart, indexStart + token.length, label, lines);
 			return true;
 		}
 		return false;
 	}
 
-	informCorrect(answer, indexStart, indexEnd, label){
-		this.sendResponse(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
+	informCorrect(answer, indexStart, indexEnd, label, lines){
+		lines.push(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
+		console.log(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
 	}
 
-	informIncorrect(token, label) {
-		this.sendResponse(`✘ ${label}: ${token}`);
+	informIncorrect(token, label, lines) {
+		lines.push(`✘ ${label}: ${token}`);
+		console.log(`✘ ${label}: ${token}`);
 
 	}
 
     sendCommand(command: string) {
     	command = command.trim();
         if(command) {
-        	switch (command) {
-        		// case "cheat":
-        		// 	this.printHelp();
-        		// 	break;
-        		case "help":
-        			this.printHelp();
-        			break;
-        		default:
-        			this.commandSource.next(command);
-        	}
+        	this.commandSource.next(command);
+        	// switch (command) {
+        	// 	// case "cheat":
+        	// 	// 	this.printHelp();
+        	// 	// 	break;
+        	// 	case "help":
+        	// 		this.printHelp();
+        	// 		break;
+        	// 	default:
+        	// 		this.commandSource.next(command);
+        	// }
         }
     }
 
@@ -182,18 +254,18 @@ export class TerminalService {
 
     }
     
-    private sendResponse(...responses: string[]) {
-    	for (let i = 0; i < responses.length; i++) {
-    		const response = responses[i];
-    		if(response) {
-	        	// console.log(`Response: ${response}`);
-	            this.responseSource.next(response);
-	        }
-    	}
-    }
+    // private sendResponse(...responses: string[]) {
+    // 	for (let i = 0; i < responses.length; i++) {
+    // 		const response = responses[i];
+    // 		if(response) {
+	   //      	// console.log(`Response: ${response}`);
+	   //          this.responseSource.next(response);
+	   //      }
+    // 	}
+    // }
 
     printHelp(){
-		this.sendResponse(
+		console.log(
 			'Usage',
 			'"regions" : list all regions',
 			'"all" : list all items',
@@ -204,7 +276,7 @@ export class TerminalService {
     }
 
   //   cheat(){
-		// this.sendResponse('You cheated!');
+		// console.log('You cheated!');
   //   }
 
     testAll(){
@@ -212,16 +284,23 @@ export class TerminalService {
 		// console.log(`regionId: ${regionId}`);
 		// console.log('Loading...');
 		// this.terminalService.sendResponse('Loading...');
-		this.afs.collection('/items').snapshotChanges().map(actions => shuffleAndReturn(actions.map(a => a.payload.doc.id))).first().subscribe(ids => {
-			this.itemIds = ids;
-			this.sendResponse('Total items: ' + this.itemIds.length);
-			// for (var i = 0; i < this.itemIds.length; i++) {
-			// 	this.sendResponse(this.itemIds[i]);
-			// }
+		this.afs.collection('/items').ref.get().then(querySnapshot => {
+			this.itemIds = [];
+			querySnapshot.forEach(querySnapshot => this.itemIds.push(querySnapshot.id));
+			console.log('Total items: ' + this.itemIds.length);
+			shuffle(this.itemIds);
 			this.loadDetails();
-			// console.log('Loaded items: ' + this.itemIds.length);
-			// this.loadDetails();
 		});
+		// this.afs.collection('/items').snapshotChanges().map(actions => shuffleAndReturn(actions.map(a => a.payload.doc.id))).first().subscribe(ids => {
+		// 	this.itemIds = ids;
+		// 	console.log('Total items: ' + this.itemIds.length);
+		// 	// for (var i = 0; i < this.itemIds.length; i++) {
+		// 	// 	console.log(this.itemIds[i]);
+		// 	// }
+		// 	this.loadDetails();
+		// 	// console.log('Loaded items: ' + this.itemIds.length);
+		// 	// this.loadDetails();
+		// });
 		// combineLatest(this.currentDetails, this.terminalService.commandHandler).subscribe(([details, command]) => {
 		// 	console.log(`Details: ` + JSON.stringify(details));
 		// 	console.log(`Command: ` + JSON.stringify(command));
@@ -236,22 +315,21 @@ export class TerminalService {
 	loadDetails() {
 		if (this.index < this.itemIds.length) {
 			let itemId = this.itemIds[this.index];
-			this.sendResponse(`Loading item: "${itemId}"`);
+			console.log(`Loading item: "${itemId}"`);
 			this.currentId.next(itemId);
 		} else {
-			this.sendResponse('No more items!');
+			console.log('No more items!');
 		}
 	}
 
 }
 
 
-function shuffleAndReturn(array) {
+function shuffle(array) {
   for (let i = array.length - 1, j = 0, temp = null; i > 0; i -= 1) {
     j = Math.floor(Math.random() * (i + 1))
     temp = array[i]
     array[i] = array[j]
     array[j] = temp
   }
-  return array;
 }

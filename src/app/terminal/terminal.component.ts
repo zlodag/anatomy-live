@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {TerminalService} from './terminal.service';
 import {Subscription}   from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
 
 interface Line {
 	text: string;
@@ -19,8 +20,8 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
 
     @Input() welcomeMessage: string;
 
-    @Input() prompt: string;
-        
+    prompt: Observable<string>;
+
     @Input() style: any;
         
     @Input() styleClass: string;
@@ -39,9 +40,13 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     }
 
     ngOnInit(){
-        this.responseSubscription = this.terminalService.responseHandler.subscribe(response => {
+        this.prompt = this.terminalService.promptObservable;
+        // this.prompt.subscribe(s => console.log(s));
+        this.responseSubscription = this.terminalService.responseHandler.subscribe(lines => {
             // this.lines[this.lines.length - 1].response = response;
-            this.lines.push({text: response, command: false});
+            for (var i = 0; i < lines.length; i++) {
+                this.lines.push({text: lines[i], command: false});
+            }
             this.scrollToBottom = true;
         });
         this.terminalService.testAll();
@@ -61,7 +66,7 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
 
     handleCommand(event: KeyboardEvent) {
         if(event.keyCode == 13) {
-            this.lines.push({text: this.command, command: true});
+            // this.lines.push({text: this.command, command: true});
             this.terminalService.sendCommand(this.command);
             // this.terminalService.sendResponse('You said ' + this.command);
             this.command = '';

@@ -8,7 +8,7 @@
         </div>
     </div>
     <div>
-        <span class="anatomy-terminal-content-prompt">{{prompt}}</span>
+        <span class="anatomy-terminal-content-prompt">{{prompt | async}}</span>
         <input #in type="text" [(ngModel)]="command" class="anatomy-terminal-input" autocomplete="off" (keydown)="handleCommand($event)" autofocus>
     </div>
 </div>
