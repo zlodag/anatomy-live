@@ -40,16 +40,17 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     }
 
     ngOnInit(){
-        this.prompt = this.terminalService.promptObservable;
+        // this.prompt = this.terminalService.currentId;
         // this.prompt.subscribe(s => console.log(s));
-        this.responseSubscription = this.terminalService.responseHandler.subscribe(lines => {
+        this.responseSubscription = this.terminalService.responseHandler.subscribe(text => {
             // this.lines[this.lines.length - 1].response = response;
-            for (var i = 0; i < lines.length; i++) {
-                this.lines.push({text: lines[i], command: false});
-            }
+            // for (var i = 0; i < lines.length; i++) {
+            //     this.lines.push({text: lines[i], command: false});
+            // }
+            this.lines.push({text: text, command: false});
             this.scrollToBottom = true;
         });
-        this.terminalService.testAll();
+        // this.terminalService.testAll();
     }
 
     ngAfterViewInit() {

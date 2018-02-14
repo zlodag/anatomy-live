@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
+import { Subscriber } from 'rxjs/Subscriber';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from 'angularfire2/firestore';
 // import * as firestore from 'firebase/firestore';
 import { firestore } from 'firebase';
@@ -8,19 +9,101 @@ import { Details, DetailField, DETAIL_FIELDS } from '../models';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/do';
+import { from } from 'rxjs/observable/from';
 import { merge } from 'rxjs/observable/merge';
+// import { create } from 'rxjs/observable/create';
 import 'rxjs/add/operator/withLatestFrom';
-// import { combineLatest } from 'rxjs/observable/combineLatest';
+import { fromPromise } from 'rxjs/observable/fromPromise';
+// import { from } from 'rxjs/observable/from';
+
+
+
+class CurrentIdObservable extends Observable<string> {
+	private currentIndex = 0;
+	// private subscriber : Subscriber<string>;
+	private itemIds: string[];
+	constructor(afs: AngularFirestore) {
+		super(subscriber => {
+			// subscriber = subscriber;
+			this.currentIndex = 0;
+			afs.collection('/items').ref.get().then(querySnapshot => {
+				let itemIds = [];
+				querySnapshot.forEach(querySnapshot => itemIds.push(querySnapshot.id));
+				shuffle(itemIds);
+				this.itemIds = itemIds;
+				this.advance(subscriber);
+			});
+		});
+	}
+	advance(subscriber : Subscriber<string>) {
+		if (this.currentIndex < this.itemIds.length) {
+			subscriber.next(this.itemIds[this.currentIndex]);
+			this.currentIndex++;
+		} else {
+			subscriber.complete();
+		}
+	}
+}
 
 @Injectable()
 export class TerminalService {
     
-
 	constructor(private readonly afs: AngularFirestore) {
-		this.currentDetails.subscribe(documentSnapshot => {
-			console.log(JSON.stringify(documentSnapshot.data()));
-		});
+	}
+	currentId = new CurrentIdObservable(this.afs);
+    private commandSource = new Subject<string>();
+    private responseSource = new Subject<string>();
+    
+    
+    // remainder: number;
+	index = 0;
+	itemIds: string[];
 
+	private currentDetails: Observable<Details> = this.currentId
+		.do(id => console.log(id))
+		.switchMap(currentId => this.afs.collection('/details').doc<Details>(currentId).ref.get())
+		.map((documentSnapshot) : Details => documentSnapshot.data())
+		// .do(details => console.log(JSON.stringify(details)))
+		;
+
+    private commandHandler : Observable<string> = this.commandSource.withLatestFrom(this.currentDetails).map(([command, details]) => {
+    	let lines: string[] = [];
+    	lines.push(` > ${command}`);
+    	console.log(` > ${command}`);
+    	return ` > ${command}`;
+    	// // lines.push(`${details.id} > ${command}`);
+    	// // lines.push(`against: ${JSON.stringify(details.data())}`);
+    	// // lines.push(details.id + ' >');
+	    // let match = command.match(/^(\w{2})\s+(.+)$/);
+	    // if (match) {
+	    // 	const shortcut = match[1].toLowerCase();
+	    // 	for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+	    // 		const detailField = DETAIL_FIELDS[i];
+	    // 		if (shortcut == detailField.shortcut){
+	    // 			this.testAgainst(details, detailField, lines, match[2].split(','));
+	    // 			break;
+	    // 		}
+	    // 	}
+	    // }
+    	// return lines;
+    });
+    // .switchMap(lines => from(lines));
+
+    responseHandler = merge(this.responseSource, this.commandHandler);
+
+    sendCommand(command: string) {
+    	command = command.trim();
+        if(command) {
+        	console.log('sending command: ' + command);
+        	this.commandSource.next(command);
+        }
+    }
+
+
+	// responseHandler : Observable<string> = merge(this.responseSource, this.commandHandler);
+
+
+		// 
 		// this.commandSource.withLatestFrom(this.currentDetails).subscribe(([command, details]) => {
 		// 	if (!details) {
 		//         console.log(`No details...`);
@@ -74,57 +157,45 @@ export class TerminalService {
 		//     } else {
 		//         console.log(`Invalid command: "${command}". Try "help"`);		
 		//     }
-
-// 		    let match = command.match(/^\W*(?:(cheat)\W+)?(\w{2})(?:\W+(.+))?$/);
-		    // if (match) {
-		    //   let shortcut = match[2];
-		    //   let detailField: DetailField = null;
-		    //   for (var i = 0; !detailField && i < DETAIL_FIELDS.length; i++) {
-		    //     if (shortcut == DETAIL_FIELDS[i].shortcut){
-		    //       detailField = DETAIL_FIELDS[i];
-		    //       if (match[1]){
-		    //         this.log({text: 'Cheating:', userInput: false});
-		    //       }
-		    //       this.log({text: detailField.label, userInput: false});
-		    //       let itemField = item[detailField.key];
-		    //       if (detailField.array ? !itemField.length : !itemField){
-		    //         this.log({text: 'No entry for: ' + detailField.label, userInput: false});
-		    //         return;
-		    //       } else {
-		    //         testItems = detailField.array ? itemField : [itemField];
-		    //         if (match[1]){
-		    //           for (var j = 0; j < testItems.length; j++) {
-		    //             let testItem = testItems[j];
-		    //             this.log({text: 'ANSWER: "' + testItem + '"', userInput: false});
-		    //           }
-		    //           return;
-		    //         }
-		    //       }
-		    //     }
-		    //   }
-		    //   if (!detailField) {
-		    //     this.log({text: 'Invalid key: "' + key + '". Try "help"', userInput: false});
-		    //     return;
-		    //   }
-		    // } else {
-
-		    // }
-// 			break;
-
+		// 
+		//     let match = command.match(/^\W*(?:(cheat)\W+)?(\w{2})(?:\W+(.+))?$/);
+		//     if (match) {
+		//       let shortcut = match[2];
+		//       let detailField: DetailField = null;
+		//       for (var i = 0; !detailField && i < DETAIL_FIELDS.length; i++) {
+		//         if (shortcut == DETAIL_FIELDS[i].shortcut){
+		//           detailField = DETAIL_FIELDS[i];
+		//           if (match[1]){
+		//             this.log({text: 'Cheating:', userInput: false});
+		//           }
+		//           this.log({text: detailField.label, userInput: false});
+		//           let itemField = item[detailField.key];
+		//           if (detailField.array ? !itemField.length : !itemField){
+		//             this.log({text: 'No entry for: ' + detailField.label, userInput: false});
+		//             return;
+		//           } else {
+		//             testItems = detailField.array ? itemField : [itemField];
+		//             if (match[1]){
+		//               for (var j = 0; j < testItems.length; j++) {
+		//                 let testItem = testItems[j];
+		//                 this.log({text: 'ANSWER: "' + testItem + '"', userInput: false});
+		//               }
+		//               return;
+		//             }
+		//           }
+		//         }
+		//       }
+		//       if (!detailField) {
+		//         this.log({text: 'Invalid key: "' + key + '". Try "help"', userInput: false});
+		//         return;
+		//       }
+		//     } else {
+		//
+		//     }
+		// 	break;
+		// 
 		// });
-	}
 
-    private commandSource = new Subject<string>();
-    private responseSource = new Subject<string[]>();
-    
-    // commandHandler = this.commandSource.asObservable();
-    
-    remainder: number;
-	index = 0;
-	itemIds: string[];
-	private currentId: Subject<string> = new Subject();
-	private currentDetails: Observable<firestore.DocumentSnapshot> = this.currentId.switchMap(currentId => this.afs.collection('/details').doc<Details>(currentId).ref.get());
-	promptObservable = this.currentId.asObservable();
 	// private detailWatcher: Observable<string[]> = this.currentDetails.map(documentSnapshot => {
  //    	let lines: string[] = [];
  //    	lines.push(`Time for a new item: ${documentSnapshot.id}`);
@@ -145,27 +216,7 @@ export class TerminalService {
 	// 	console.log(`Loaded!`);
 	// 	console.log(JSON.stringify(details));
 	// })
-	;
-    private commandHandler : Observable<string[]> = this.commandSource.withLatestFrom(this.currentDetails).map(([command, details]) => {
-    	let lines: string[] = [];
-    	lines.push(`${details.id} > ${command}`);
-    	// lines.push(`against: ${JSON.stringify(details.data())}`);
-    	// lines.push(details.id + ' >');
-	    let match = command.match(/^(\w{2})\s+(.+)$/);
-	    if (match) {
-	    	const shortcut = match[1].toLowerCase();
-	    	for (var i = 0; i < DETAIL_FIELDS.length; i++) {
-	    		const detailField = DETAIL_FIELDS[i];
-	    		if (shortcut == detailField.shortcut){
-	    			this.testAgainst(details.data(), detailField, lines, match[2].split(','));
-	    			break;
-	    		}
-	    	}
-	    }
-    	return lines;
-    });
 
-	responseHandler : Observable<string[]> = merge(this.responseSource, this.commandHandler);
 
 	testAgainst(details: Details, detailField: DetailField, lines: string[], tokens: string[]) {
 		const itemField = details[detailField.key];
@@ -233,26 +284,10 @@ export class TerminalService {
 
 	}
 
-    sendCommand(command: string) {
-    	command = command.trim();
-        if(command) {
-        	this.commandSource.next(command);
-        	// switch (command) {
-        	// 	// case "cheat":
-        	// 	// 	this.printHelp();
-        	// 	// 	break;
-        	// 	case "help":
-        	// 		this.printHelp();
-        	// 		break;
-        	// 	default:
-        	// 		this.commandSource.next(command);
-        	// }
-        }
-    }
 
-    guess(detailField: DetailField, token: string) {
+    // guess(detailField: DetailField, token: string) {
 
-    }
+    // }
     
     // private sendResponse(...responses: string[]) {
     // 	for (let i = 0; i < responses.length; i++) {
@@ -264,33 +299,33 @@ export class TerminalService {
     // 	}
     // }
 
-    printHelp(){
-		console.log(
-			'Usage',
-			'"regions" : list all regions',
-			'"all" : list all items',
-			'"items" : list items filtered by region',
-			'"add" : add new regions or items',
-			'"help" : display this message'
-		);
-    }
+  //   printHelp(){
+		// console.log(
+		// 	'Usage',
+		// 	'"regions" : list all regions',
+		// 	'"all" : list all items',
+		// 	'"items" : list items filtered by region',
+		// 	'"add" : add new regions or items',
+		// 	'"help" : display this message'
+		// );
+  //   }
 
   //   cheat(){
 		// console.log('You cheated!');
   //   }
 
-    testAll(){
+    // testAll(){
 		// let regionId = this.route.snapshot.paramMap.get('region');
 		// console.log(`regionId: ${regionId}`);
 		// console.log('Loading...');
 		// this.terminalService.sendResponse('Loading...');
-		this.afs.collection('/items').ref.get().then(querySnapshot => {
-			this.itemIds = [];
-			querySnapshot.forEach(querySnapshot => this.itemIds.push(querySnapshot.id));
-			console.log('Total items: ' + this.itemIds.length);
-			shuffle(this.itemIds);
-			this.loadDetails();
-		});
+		// this.afs.collection('/items').ref.get().then(querySnapshot => {
+		// 	this.itemIds = [];
+		// 	querySnapshot.forEach(querySnapshot => this.itemIds.push(querySnapshot.id));
+		// 	console.log('Total items: ' + this.itemIds.length);
+		// 	shuffle(this.itemIds);
+		// 	this.loadDetails();
+		// });
 		// this.afs.collection('/items').snapshotChanges().map(actions => shuffleAndReturn(actions.map(a => a.payload.doc.id))).first().subscribe(ids => {
 		// 	this.itemIds = ids;
 		// 	console.log('Total items: ' + this.itemIds.length);
@@ -310,17 +345,17 @@ export class TerminalService {
 		// this.currentId.subscribe(id => console.log(JSON.stringify(id)));
 		// this.currentDetails.subscribe(details => console.log(JSON.stringify(details)));
 
-    }
+    // }
 
-	loadDetails() {
-		if (this.index < this.itemIds.length) {
-			let itemId = this.itemIds[this.index];
-			console.log(`Loading item: "${itemId}"`);
-			this.currentId.next(itemId);
-		} else {
-			console.log('No more items!');
-		}
-	}
+	// loadDetails() {
+	// 	if (this.index < this.itemIds.length) {
+	// 		let itemId = this.itemIds[this.index];
+	// 		console.log(`Loading item: "${itemId}"`);
+	// 		this.currentId.next(itemId);
+	// 	} else {
+	// 		console.log('No more items!');
+	// 	}
+	// }
 
 }
 
