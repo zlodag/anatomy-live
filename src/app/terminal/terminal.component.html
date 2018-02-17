@@ -1,7 +1,7 @@
 <div id="completedList">
-    <h4>{{ item?.id }}</h4>
+    <h4>{{ itemId }}</h4>
     <ul class="list-group">
-        <li *ngFor="let field of done" class="list-group-item">
+        <li *ngFor="let field of terminalService.doneItem | async" class="list-group-item">
             <h5>{{ field.key }}</h5>
             <ul>
                 <li *ngFor="let entry of field.items">{{ entry }}</li>
@@ -13,8 +13,8 @@
 <div id="anatomy-terminal" (click)="focus(in)">
     <div>Anatomy Quiz! (Enter "help" for help)</div>
     <div *ngFor="let line of lines">{{ line }}</div>
-    <div [hidden]="!item">
-        <span id="prompt">{{ item?.id }} ></span>
+    <div [hidden]="!itemId">
+        <span id="prompt">{{ itemId }} ></span>
         <input #in type="text" [(ngModel)]="command" autocomplete="off" (keydown)="handleCommand($event)" autofocus />
     </div>
 </div>

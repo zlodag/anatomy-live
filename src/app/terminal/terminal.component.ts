@@ -33,45 +33,32 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     constructor(public el: ElementRef, public terminalService: TerminalService) {
     }
 
-    item: QuizItem = null;
-    done: {
-        key: string;
-        items: string[];
-    }[] = [];
-
+    // item: QuizItem = null;
+    itemId: string = null;
+    
     ngOnInit(){
         this.responseSubscription = this.terminalService.response.subscribe(text => {
             this.lines.push(text);
             this.scrollToBottom = true;
         });
-        this.itemSubscription = this.terminalService.quizItem.subscribe(
-            quizItem => {
-                this.item = quizItem;
-                // console.log(JSON.stringify(quizItem));
-                this.done = [];
-                for (var i = 0; i < DETAIL_FIELDS.length; i++) {
-                    const key = DETAIL_FIELDS[i].key;
-                    const items = quizItem.details[key];
-                    if (items) {
-                        const doneItems = [];
-                        items.forEach(item => {
-                            if (item.done) {
-                                doneItems.push(item.text);
-                            }
-                        });
-                        if (doneItems.length) {
-                            this.done.push({key: key, items: doneItems});
-                        }
-                    }
-                }
-            },
+        this.itemSubscription = this.terminalService.itemId.subscribe(
+            itemId => this.itemId = itemId,
             error => {},
-            () => {
-                console.log('finished');
-                this.done = [];
-                this.item = null;
-            }
+            () => this.itemId = null
         );
+        // this.terminalService.itemId.subscribe(
+        //     itemId => {
+        //         this.itemId = itemId;
+        //     },
+        //     error => {},
+        //     () => {
+        //         this.itemSubscription.unsubscribe();
+        //         console.log('finished');
+        //         this.done = [];
+        //         this.item = null;
+        //     }
+        // )
+
         // this.terminalService.item.subscribe(item => item.remainder)
         // this.itemSubscription = this.terminalService.item.subscribe(item => this.item = item, error => {}, () => this.item = null);
     }
@@ -89,7 +76,7 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
 
     handleCommand(event: KeyboardEvent) {
         if(event.keyCode == 13) {
-            this.terminalService.command.next(this.command || '');
+            this.terminalService.sendCommand(this.command);
             this.command = '';
         }
     }

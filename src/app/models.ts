@@ -93,3 +93,7 @@ export interface QuizItem {
     remainder: number;
 }
 
+export interface DoneItem {
+    key: string;
+    items: string[];
+}
