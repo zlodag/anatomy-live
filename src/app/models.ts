@@ -1,11 +1,11 @@
-import * as firebase from 'firebase';
+import { firestore } from 'firebase';
 
 export interface Region {
-  ts: Date | firebase.firestore.FieldValue;
+  ts: Date | firestore.FieldValue;
 }
 
 export interface Item {
-  ts: Date | firebase.firestore.FieldValue;
+  ts: Date | firestore.FieldValue;
   region: string;
 }
 
@@ -76,3 +76,19 @@ export interface Details {
 
     'Variants'?: string[];
 }
+
+export interface QuizDetail {
+    text: string;
+    done: boolean;
+}
+
+export interface QuizDetails {
+    [key: string]: QuizDetail[];
+}
+
+export interface QuizItem {
+    id: string;
+    details: QuizDetails;
+    remainder: number;
+}
+

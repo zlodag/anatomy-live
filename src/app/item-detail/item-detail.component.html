@@ -7,7 +7,7 @@
 	</ol>
 </nav>
 <ul *ngIf="itemObservable | async as item" class="list-group">
-	<li *ngFor="let field of editState.edit ? DETAIL_FIELDS : (DETAIL_FIELDS | detailFieldFilter : item)" class="list-group-item">
+	<li *ngFor="let field of editState.edit ? DETAIL_FIELDS : (item | detailFields)" class="list-group-item">
 		<h5>
 			<span>{{ field.key }}</span>
 			<app-add-string *ngIf="editState.edit" [label]="field.key" (newString)="addEntry(field.key, item[field.key], $event)"></app-add-string>

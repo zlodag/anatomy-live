@@ -4,6 +4,7 @@ import {CommonModule} from '@angular/common';
 import {TerminalService} from './terminal.service';
 import {Subscription}   from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
+import { QuizItem } from '../models';
 
 interface Line {
 	text: string;
@@ -17,16 +18,8 @@ interface Line {
 	providers: [TerminalService]
 })
 export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,OnDestroy {
-
-    @Input() welcomeMessage: string;
-
-    prompt: Observable<string>;
-
-    @Input() style: any;
-        
-    @Input() styleClass: string;
             
-    lines: Line[] = [];
+    lines: string[] = [];
     
     command: string;
     
@@ -35,27 +28,24 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     scrollToBottom: boolean;
     
     responseSubscription: Subscription;
+    // itemSubscription: Subscription;
     
     constructor(public el: ElementRef, public terminalService: TerminalService) {
     }
 
+    // item: QuizItem = null;
+
     ngOnInit(){
-        // this.prompt = this.terminalService.currentId;
-        // this.prompt.subscribe(s => console.log(s));
-        this.responseSubscription = this.terminalService.responseHandler.subscribe(text => {
-            // this.lines[this.lines.length - 1].response = response;
-            // for (var i = 0; i < lines.length; i++) {
-            //     this.lines.push({text: lines[i], command: false});
-            // }
-            this.lines.push({text: text, command: false});
+        this.responseSubscription = this.terminalService.response.subscribe(text => {
+            this.lines.push(text);
             this.scrollToBottom = true;
         });
-        // this.terminalService.testAll();
+        // this.terminalService.item.subscribe(item => item.remainder)
+        // this.itemSubscription = this.terminalService.item.subscribe(item => this.item = item, error => {}, () => this.item = null);
     }
 
     ngAfterViewInit() {
-        // this.container = this.domHandler.find(this.el.nativeElement, '.ui-terminal')[0];
-        this.container = this.el.nativeElement.querySelectorAll('.anatomy-terminal')[0];
+        this.container = this.el.nativeElement.querySelector('#anatomy-terminal');
     }
     
     ngAfterViewChecked() {
@@ -67,9 +57,7 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
 
     handleCommand(event: KeyboardEvent) {
         if(event.keyCode == 13) {
-            // this.lines.push({text: this.command, command: true});
-            this.terminalService.sendCommand(this.command);
-            // this.terminalService.sendResponse('You said ' + this.command);
+            this.terminalService.command.next(this.command || '');
             this.command = '';
         }
     }
@@ -82,13 +70,9 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
         if(this.responseSubscription) {
             this.responseSubscription.unsubscribe();
         }
+        // if(this.itemSubscription) {
+        //     this.itemSubscription.unsubscribe();
+        // }
     }
     
 }
-
-// @NgModule({
-//     imports: [CommonModule,FormsModule],
-//     exports: [TerminalComponent],
-//     declarations: [TerminalComponent]
-// })
-// export class TerminalModule { }

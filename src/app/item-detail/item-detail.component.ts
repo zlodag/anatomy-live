@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AngularFirestore, AngularFirestoreDocument } from 'angularfire2/firestore';
 import { Observable } from 'rxjs/Observable';
-import { Details, DETAIL_FIELDS } from '../models';
+import { Details } from '../models';
 import { EditStateService } from '../edit-state.service';
 import 'rxjs/add/operator/map';
 import * as firebase from 'firebase';
@@ -16,7 +16,6 @@ export class ItemDetailComponent implements OnInit {
 
   private itemDocument: AngularFirestoreDocument<Details>;
   itemObservable: Observable<Details>;
-  DETAIL_FIELDS = DETAIL_FIELDS;
 
   constructor(private readonly afs: AngularFirestore, public route: ActivatedRoute, public editState: EditStateService) { }
 

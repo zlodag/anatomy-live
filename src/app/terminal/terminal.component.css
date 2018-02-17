@@ -1,31 +1,39 @@
-.anatomy-terminal {
+#anatomy-terminal {
     height: 18em;
     overflow: auto;
-    padding: .25em;
+    background: black;
+    padding: 1em;
+    color: white;
+    font-family: monospace;
+    font-size: 12px;
+    float: right;
+    width: 50%;
 }
 
-.anatomy-terminal-input {
+#anatomy-terminal input {
     border: 0 none;
     background-color: transparent;
     color: inherit;
+    font-family: inherit;
+    font-size: inherit;
     padding: 0;
-    /*margin: 0 0 0 .125em;*/
     margin: 0;
     width: 75%;
     outline: none;
-    vertical-align: baseline;
 }
 
-/*.anatomy-terminal-command::before {
-    margin-left: .125em;
-    -moz-margin-start: .125em;
-    content: '> ';
-}
-*/
-.anatomy-terminal-command::before { 
-    content: "> ";
-}
-
-.anatomy-terminal-input::-ms-clear {
+#anatomy-terminal input::-ms-clear {
     display: none;
 }
+
+#completedList {
+    float: left;
+    width: 40%;
+}
+/*#prompt {
+    font-weight: bold;
+}*/
+/*
+#anatomy-terminal, #anatomy-terminal input {
+}
+*/

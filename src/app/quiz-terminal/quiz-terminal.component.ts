@@ -20,10 +20,10 @@ export class QuizTerminalComponent implements OnInit {
 
 	constructor(private route: ActivatedRoute, private readonly afs: AngularFirestore) { }
 
-	index = 0;
-	itemIds: string[];
-	currentId: Subject<string> = new Subject();
-	currentDetails: Observable<Details>;
+	// index = 0;
+	// itemIds: string[];
+	// currentId: Subject<string> = new Subject();
+	// currentDetails: Observable<Details>;
 
 	// command: string;
 	// commands = [

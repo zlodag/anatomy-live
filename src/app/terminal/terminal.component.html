@@ -1,14 +1,17 @@
-<div [ngClass]="'anatomy-terminal ui-widget ui-widget-content ui-corner-all'" [ngStyle]="style" [class]="styleClass" (click)="focus(in)">
-    <div *ngIf="welcomeMessage">{{welcomeMessage}}</div>
-    <div class="anatomy-terminal-content">
-        <div *ngFor="let line of lines">
-            <!-- <span>{{prompt}}</span> -->
-            <span [ngClass]="{'anatomy-terminal-command':line.command}">{{line.text}}</span>
-            <div>{{line.response}}</div>
-        </div>
-    </div>
-    <div>
-        <span class="anatomy-terminal-content-prompt">{{terminalService.currentId | async}}</span>
-        <input #in type="text" [(ngModel)]="command" class="anatomy-terminal-input" autocomplete="off" (keydown)="handleCommand($event)" autofocus>
+<ul id="completedList" *ngIf="terminalService.item | async as item" class="list-group">
+    <li *ngFor="let field of item.details | detailFields" class="list-group-item">
+        <h5>{{ field.key }}</h5>
+        <ul>
+            <li *ngFor="let entry of item.details[field.key] | subItemsDone">{{ entry.text }}</li>
+        </ul>
+    </li>
+</ul>
+
+<div id="anatomy-terminal" (click)="focus(in)">
+    <div>Anatomy Quiz! (Enter "help" for help)</div>
+    <div *ngFor="let line of lines">{{ line }}</div>
+    <div [hidden]="!(terminalService.item | async)">
+        <span id="prompt">{{ (terminalService.item | async)?.id }} ></span>
+        <input #in type="text" [(ngModel)]="command" autocomplete="off" (keydown)="handleCommand($event)" autofocus />
     </div>
 </div>
