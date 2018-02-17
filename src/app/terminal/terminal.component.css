@@ -1,9 +1,11 @@
 #anatomy-terminal {
     height: 18em;
+    height: 80vh;
     overflow: auto;
-    background: black;
+    border: 1px solid black;
+    /*background: black;*/
     padding: 1em;
-    color: white;
+    /*color: white;*/
     font-family: monospace;
     font-size: 12px;
     float: right;

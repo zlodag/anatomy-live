@@ -433,17 +433,11 @@ export class TerminalService {
 
     private printHelp(){
     	[
-    		'Usage:',
-    		'<key> <guess>[,<guess>...]',
-    		'\tAttempt answer(s) to current item for the specified key',
-    		'skip',
-    		'\tSkip current item',
-    		'cheat',
-    		'\tDisplay answer(s) to current item',
-    		'keys',
-    		'\tDisplay a list of keys',
-    		'help',
-    		'\tDisplay this message',
+    		'<key> <guess>[,<guess>...]: Attempt answer(s) to current item for the specified key',
+    		'skip: Skip current item',
+    		'cheat: Display answer(s) to current item',
+    		'keys: Display a list of keys',
+    		'help: Display this message',
     	].forEach(line => this.logSource.next(line));
     }
 }

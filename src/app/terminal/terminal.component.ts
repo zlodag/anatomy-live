@@ -4,7 +4,7 @@ import {CommonModule} from '@angular/common';
 import {TerminalService} from './terminal.service';
 import {Subscription}   from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
-import { QuizItem } from '../models';
+import { QuizItem, Details, DETAIL_FIELDS } from '../models';
 
 interface Line {
 	text: string;
@@ -34,6 +34,10 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     }
 
     item: QuizItem = null;
+    done: {
+        key: string;
+        items: string[];
+    }[] = [];
 
     ngOnInit(){
         this.responseSubscription = this.terminalService.response.subscribe(text => {
@@ -41,9 +45,32 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
             this.scrollToBottom = true;
         });
         this.itemSubscription = this.terminalService.quizItem.subscribe(
-            item => {this.item = item; console.log(JSON.stringify(item));},
+            quizItem => {
+                this.item = quizItem;
+                // console.log(JSON.stringify(quizItem));
+                this.done = [];
+                for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+                    const key = DETAIL_FIELDS[i].key;
+                    const items = quizItem.details[key];
+                    if (items) {
+                        const doneItems = [];
+                        items.forEach(item => {
+                            if (item.done) {
+                                doneItems.push(item.text);
+                            }
+                        });
+                        if (doneItems.length) {
+                            this.done.push({key: key, items: doneItems});
+                        }
+                    }
+                }
+            },
             error => {},
-            () => this.item = null
+            () => {
+                console.log('finished');
+                this.done = [];
+                this.item = null;
+            }
         );
         // this.terminalService.item.subscribe(item => item.remainder)
         // this.itemSubscription = this.terminalService.item.subscribe(item => this.item = item, error => {}, () => this.item = null);

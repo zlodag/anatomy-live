@@ -1,11 +1,14 @@
-<ul id="completedList" *ngIf="item" class="list-group">
-    <li *ngFor="let field of item.details | detailFields" class="list-group-item">
-        <h5>{{ field.key }}</h5>
-        <ul>
-            <li *ngFor="let entry of item.details[field.key] | subItemsDone">{{ entry.text }}</li>
-        </ul>
-    </li>
-</ul>
+<div id="completedList">
+    <h4>{{ item?.id }}</h4>
+    <ul class="list-group">
+        <li *ngFor="let field of done" class="list-group-item">
+            <h5>{{ field.key }}</h5>
+            <ul>
+                <li *ngFor="let entry of field.items">{{ entry }}</li>
+            </ul>
+        </li>
+    </ul>
+</div>
 
 <div id="anatomy-terminal" (click)="focus(in)">
     <div>Anatomy Quiz! (Enter "help" for help)</div>
