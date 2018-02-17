@@ -9,8 +9,13 @@ export class DetailFieldFilterPipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'subItemsDone'
+  name: 'subItemsDone',
+  pure: false,
 })
 export class SubItemsDoneFilter implements PipeTransform {
-  transform = (subItems: QuizDetail[]): QuizDetail[] => subItems.filter(subItem => subItem.done);
+  transform = (subItems: QuizDetail[]): QuizDetail[] => {
+  	let ret = subItems.filter(subItem => subItem.done);
+  	console.log(JSON.stringify(ret));
+  	return ret;
+  }
 }

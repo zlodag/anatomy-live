@@ -89,6 +89,7 @@ export interface QuizDetails {
 export interface QuizItem {
     id: string;
     details: QuizDetails;
+    total: number;
     remainder: number;
 }
 

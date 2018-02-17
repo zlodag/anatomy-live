@@ -1,4 +1,4 @@
-<ul id="completedList" *ngIf="terminalService.item | async as item" class="list-group">
+<ul id="completedList" *ngIf="item" class="list-group">
     <li *ngFor="let field of item.details | detailFields" class="list-group-item">
         <h5>{{ field.key }}</h5>
         <ul>
@@ -10,8 +10,8 @@
 <div id="anatomy-terminal" (click)="focus(in)">
     <div>Anatomy Quiz! (Enter "help" for help)</div>
     <div *ngFor="let line of lines">{{ line }}</div>
-    <div [hidden]="!(terminalService.item | async)">
-        <span id="prompt">{{ (terminalService.item | async)?.id }} ></span>
+    <div [hidden]="!item">
+        <span id="prompt">{{ item?.id }} ></span>
         <input #in type="text" [(ngModel)]="command" autocomplete="off" (keydown)="handleCommand($event)" autofocus />
     </div>
 </div>

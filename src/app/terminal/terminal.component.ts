@@ -28,18 +28,23 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     scrollToBottom: boolean;
     
     responseSubscription: Subscription;
-    // itemSubscription: Subscription;
+    itemSubscription: Subscription;
     
     constructor(public el: ElementRef, public terminalService: TerminalService) {
     }
 
-    // item: QuizItem = null;
+    item: QuizItem = null;
 
     ngOnInit(){
         this.responseSubscription = this.terminalService.response.subscribe(text => {
             this.lines.push(text);
             this.scrollToBottom = true;
         });
+        this.itemSubscription = this.terminalService.quizItem.subscribe(
+            item => {this.item = item; console.log(JSON.stringify(item));},
+            error => {},
+            () => this.item = null
+        );
         // this.terminalService.item.subscribe(item => item.remainder)
         // this.itemSubscription = this.terminalService.item.subscribe(item => this.item = item, error => {}, () => this.item = null);
     }
@@ -70,9 +75,9 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
         if(this.responseSubscription) {
             this.responseSubscription.unsubscribe();
         }
-        // if(this.itemSubscription) {
-        //     this.itemSubscription.unsubscribe();
-        // }
+        if(this.itemSubscription) {
+            this.itemSubscription.unsubscribe();
+        }
     }
     
 }
