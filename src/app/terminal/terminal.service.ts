@@ -55,15 +55,19 @@ export class TerminalService {
     
 	constructor(private readonly afs: AngularFirestore) {
 		this.progress.connect();
+		this.command.withLatestFrom(this.itemId).subscribe(([command, id]) => {
+
+		});
 	}
     private logSource = new Subject<string>();
     response: Observable<string> = this.logSource.asObservable();
-	private itemId = new ItemId(this.afs.firestore.collection('/items'));
+	itemId = new ItemId(this.afs.firestore.collection('/items'));
 	private command = new Subject<string>();
 	progress = this.itemId
 		.switchMap(itemId => this.afs.firestore.collection('/details').doc(itemId).get())
 		.do(snapshot => {
 			if (!snapshot.exists) {
+	 	    	this.logSource.next(`Skipping ${snapshot.id} (no data)`);
 				this.itemId.nextItem();
 			}
 		})
@@ -92,17 +96,58 @@ export class TerminalService {
 		})
 		.do(quizItem => {
 			if (quizItem.total == 0) {
+	 	    	this.logSource.next(`Skipping ${quizItem.id} (no data)`);
 				this.itemId.nextItem();
 			}
 		})
 		.filter(quizItem => quizItem.total > 0)
 		.switchMap(quizItem => this.command
-			.map((command) : RegExpMatchArray => command.match(/^(\w{2})\s+(.+)$/))
+			.filter(command => {
+				this.logSource.next(`${quizItem.id} > ${command}`);
+				switch (command) {
+		    		case 'help':
+		    			this.printHelp();
+		    			return false;
+	    			case 'keys':
+	    				this.printKeys();
+		    			return false;
+		    	 	case 'skip':
+			 	    	this.logSource.next(`Skipping ${quizItem.id}`);
+		    			this.itemId.nextItem();
+		    			return false;
+	    	 		case 'cheat':
+	    	 			const progress = getProgress(quizItem).remaining;
+						for (let i = 0; i < progress.length; i++) {
+							const field = progress[i];
+							this.logSource.next(field.key);
+							for (let j = 0; j < field.items.length; j++) {
+								this.logSource.next(`- ${field.items[j]}`);
+							}
+						}
+		    			return false;
+	    			default:
+	    				return true;
+	    		}
+			})
+			.map((command) : RegExpMatchArray => {
+				const match = command.match(/^(\w{2})\s+(.+)$/);
+				if (!match) {
+			        this.logSource.next(`Invalid command: "${command}". Try "help"`);		
+				}
+				return match;
+			})
 			.filter(match => !!match)
-			.map((match) : Guess => ({
-				detailField: getDetailField(match[1].toLowerCase()),
-				tokens: match[2].split(',')
-			}))
+			.map((match) : Guess => {
+				const shortcut = match[1].toLowerCase();
+				const detailField = getDetailField(shortcut);
+				if (!detailField) {
+		        	this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);
+				}
+				return {
+					detailField: detailField,
+					tokens: match[2].split(',')
+				};
+			})
 			.filter(guess => !!guess.detailField)
 			.map(guess => {
 				for (var i = 0; i < guess.tokens.length; i++) {
@@ -138,7 +183,7 @@ export class TerminalService {
 		.publish()
 
 		;
-	private guesses = new Subject<Guess>();
+	// private guesses = new Subject<Guess>();
 	// guesses: Observable<Guess> = this.command
 	// 	.map((command) : RegExpMatchArray => command.match(/^(\w{2})\s+(.+)$/))
 	// 	.filter(match => !!match)
