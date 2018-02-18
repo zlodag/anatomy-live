@@ -6,6 +6,10 @@
 		<li class="breadcrumb-item active">{{ route.snapshot.paramMap.get('itemId') }}</li>
 	</ol>
 </nav>
+<div class="float-right">
+	<label>Edit:</label>
+	<p-inputSwitch [(ngModel)]="editState.edit"></p-inputSwitch>
+</div>
 <ul *ngIf="itemObservable | async as item" class="list-group">
 	<li *ngFor="let field of item | detailFields : editState.edit" class="list-group-item">
 		<h5>

@@ -5,6 +5,10 @@
 		<li class="breadcrumb-item active">{{ route.snapshot.paramMap.get('regionId') }}</li>
 	</ol>
 </nav>
+<div class="float-right">
+	<label>Edit:</label>
+	<p-inputSwitch [(ngModel)]="editState.edit"></p-inputSwitch>
+</div>
 <ul class="list-unstyled">
 	<li *ngFor="let item of items | async" routerLinkActive="active">
 	  	<a [routerLink]="item">{{item}}</a>

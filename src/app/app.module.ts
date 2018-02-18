@@ -20,7 +20,7 @@ import { DetailFieldFilterPipe, SubItemsDoneFilter } from './detail-field-filter
 import { AddStringComponent } from './add-string/add-string.component';
 import { QuizTerminalComponent } from './quiz-terminal/quiz-terminal.component';
 import { TerminalComponent } from './terminal/terminal.component';
-import { RegionsOverviewComponent } from './regions-overview/regions-overview.component';
+import { EditStateService } from './edit-state.service';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCNC0Rl6WPNd1qzTpyVchkyImJc1Fy4T54',
@@ -42,7 +42,6 @@ const appRoutes: Routes = [
   },
   {
     path: 'regions',
-    component: RegionsOverviewComponent,
     children: [
       {
         path: '',
@@ -77,7 +76,6 @@ const appRoutes: Routes = [
     SubItemsDoneFilter,
     QuizTerminalComponent,
     TerminalComponent,
-    RegionsOverviewComponent
   ],
   imports: [
     BrowserModule,
@@ -90,7 +88,7 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes, { enableTracing: false })
   ],
   providers: [
-    // EditStateService
+    EditStateService
   ],
   bootstrap: [AppComponent]
 })

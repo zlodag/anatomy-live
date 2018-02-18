@@ -55,9 +55,6 @@ export class TerminalService {
     
 	constructor(private readonly afs: AngularFirestore) {
 		this.progress.connect();
-		this.command.withLatestFrom(this.itemId).subscribe(([command, id]) => {
-
-		});
 	}
     private logSource = new Subject<string>();
     response: Observable<string> = this.logSource.asObservable();

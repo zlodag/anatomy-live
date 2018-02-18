@@ -8,5 +8,5 @@
 	<li *ngFor="let region of regions | async" routerLinkActive="active">
 	  	<a [routerLink]="region">{{region}}</a>
 	</li>
-	<li *ngIf="editState.edit"><app-add-string label="region" (newString)="newRegion($event)"></app-add-string></li>
+	<!-- <li *ngIf="editState.edit"><app-add-string label="region" (newString)="newRegion($event)"></app-add-string></li> -->
 </ul>
