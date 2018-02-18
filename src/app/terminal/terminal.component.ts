@@ -34,18 +34,18 @@ export class TerminalComponent implements OnInit,AfterViewInit,AfterViewChecked,
     }
 
     // item: QuizItem = null;
-    itemId: string = null;
+    // itemId: string = null;
     
     ngOnInit(){
         this.responseSubscription = this.terminalService.response.subscribe(text => {
             this.lines.push(text);
             this.scrollToBottom = true;
         });
-        this.itemSubscription = this.terminalService.itemId.subscribe(
-            itemId => this.itemId = itemId,
-            error => {},
-            () => this.itemId = null
-        );
+        // this.itemSubscription = this.terminalService.progress.subscribe(
+        //     progress => {progress.completed.forEach(item => item.)},
+        //     error => {},
+        //     () => this.itemId = null
+        // );
         // this.terminalService.itemId.subscribe(
         //     itemId => {
         //         this.itemId = itemId;

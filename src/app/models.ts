@@ -93,7 +93,13 @@ export interface QuizItem {
     remainder: number;
 }
 
-export interface DoneItem {
+export interface PrintField {
     key: string;
     items: string[];
+}
+
+export interface Progress {
+    id: string; 
+    completed: PrintField[];
+    remaining: PrintField[];
 }

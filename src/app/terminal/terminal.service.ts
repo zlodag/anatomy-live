@@ -10,6 +10,7 @@ import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/withLatestFrom';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/publish';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/observable/of';
@@ -18,28 +19,51 @@ import 'rxjs/add/observable/fromPromise';
 
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from 'angularfire2/firestore';
 import { firestore } from 'firebase';
-import { Details, DetailField, DETAIL_FIELDS, QuizItem, QuizDetail, QuizDetails, DoneItem } from '../models';
+import { Details, DetailField, DETAIL_FIELDS, QuizItem, QuizDetail, QuizDetails, PrintField, Progress } from '../models';
 import { ItemId } from './item-id';
 
 interface Guess {
-	key: string;
+	detailField: DetailField;
 	tokens: string[];
+}
+
+function getProgress(quizItem: QuizItem) : Progress {
+	let progress: Progress = {
+		id: quizItem.id,
+		completed: [],
+		remaining: []
+	};
+    for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+        const key = DETAIL_FIELDS[i].key;
+        if (key in quizItem.details) {
+            const completed = [];
+            const remaining = [];
+            quizItem.details[key].forEach(item => (item.done ? completed : remaining).push(item.text));
+            if (completed.length) {
+                progress.completed.push({key: key, items: completed});
+            }
+            if (remaining.length) {
+                progress.remaining.push({key: key, items: remaining});
+            }
+        }
+    }
+    return progress;
 }
 
 @Injectable()
 export class TerminalService {
     
 	constructor(private readonly afs: AngularFirestore) {
+		this.progress.connect();
 	}
     private logSource = new Subject<string>();
     response: Observable<string> = this.logSource.asObservable();
-	itemId = new ItemId(this.afs.firestore.collection('/items'));
+	private itemId = new ItemId(this.afs.firestore.collection('/items'));
 	private command = new Subject<string>();
-	doneItem: Observable<DoneItem[]> = this.itemId
+	progress = this.itemId
 		.switchMap(itemId => this.afs.firestore.collection('/details').doc(itemId).get())
 		.do(snapshot => {
 			if (!snapshot.exists) {
-				console.log('Snapshot is empty, skipping...');
 				this.itemId.nextItem();
 			}
 		})
@@ -66,103 +90,238 @@ export class TerminalService {
 				remainder: count
 			};
 		})
+		.do(quizItem => {
+			if (quizItem.total == 0) {
+				this.itemId.nextItem();
+			}
+		})
 		.filter(quizItem => quizItem.total > 0)
-		.switchMap((quizItem) : Observable<QuizItem> => this.command.map(command => {
-			this.logSource.next(`${quizItem.id} > ${command}`);
-	    	command = command.trim();
-	    	if (command.length) {
-		    	switch (command) {
-		    		case 'help':
-		    			this.printHelp();
-		    			break;
-	    			case 'keys':
-	    				this.printKeys();
-		    			break;
-		    	 	case 'skip':
-			 	    	this.logSource.next(`Skipping ${quizItem.id}`);
-		    			this.itemId.nextItem();
-		    			break;
-	    	 		case 'cheat':
-						for (let i = 0; i < DETAIL_FIELDS.length; i++) {
-							const detailField = DETAIL_FIELDS[i];
-							if (detailField.key in quizItem.details){
-								const subItems = quizItem.details[detailField.key];
-								for (let j = 0; j < subItems.length; j++) {
-									const subItem = subItems[j];
-									if (!subItem.done) {
-										this.logSource.next(detailField.key);
-										this.logSource.next(`- ${subItem.text}`);
+		.switchMap(quizItem => this.command
+			.map((command) : RegExpMatchArray => command.match(/^(\w{2})\s+(.+)$/))
+			.filter(match => !!match)
+			.map((match) : Guess => ({
+				detailField: getDetailField(match[1].toLowerCase()),
+				tokens: match[2].split(',')
+			}))
+			.filter(guess => !!guess.detailField)
+			.map(guess => {
+				for (var i = 0; i < guess.tokens.length; i++) {
+					const token = guess.tokens[i].trim();
+					if (this.isAdequateLength(token)){
+						let found = false;
+						if (guess.detailField.key in quizItem.details) {
+							const subItems = quizItem.details[guess.detailField.key];
+							for (let j = 0; j < subItems.length; j++) {
+								const subItem = subItems[j];
+								if (!subItem.done && this.tokenMatches(token, guess.detailField.key, subItem.text)){
+									found = subItem.done = true;
+									quizItem.remainder--;
+									if (quizItem.remainder == 0) {
+										this.logSource.next(`Completed "${quizItem.id}"`);
+										this.itemId.nextItem();
+										return quizItem;
 									}
+									break;
 								}
 							}
 						}
-		    			return quizItem;
-		    	 	default:
-						const match = command.match(/^(\w{2})\s+(.+)$/);
-					    if (match) {
-					    	const shortcut = match[1].toLowerCase();
-					    	const detailField = getDetailField(shortcut);
-					    	if (detailField) {
-								const itemField = quizItem.details[detailField.key];
-					    		const tokens = match[2].split(',');
-								for (var i = 0; i < tokens.length; i++) {
-									const token = tokens[i].trim();
-									if (this.isAdequateLength(token)){
-										let found = false;
-										if (itemField) {
-											for (let j = itemField.length - 1; j >= 0; j--) {
-												const subItem = itemField[j];
-												if (!subItem.done && this.tokenMatches(token, detailField.key, subItem.text)){
-													found = subItem.done = true;
-													quizItem.remainder--;
-													if (quizItem.remainder == 0) {
-														this.logSource.next(`Completed "${quizItem.id}"`);
-														this.itemId.nextItem();
-														return quizItem;
-													}
-													break;
-												}
-											}
-										}
-										if (!found) {
-											this.informIncorrect(token, detailField.key);
-										}
-									}
-								}
-							} else {
-						        this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);		
-					    	}
-					    } else {
-					        this.logSource.next(`Invalid command: "${command}". Try "help"`);		
-					    }
-		    	}
-		    }
-			return quizItem;
-		})
-		.startWith(quizItem)
-		// .map(quizItem => {
-		).map((item) : DoneItem[] => {
-            let done : DoneItem[] = [];
-            for (var i = 0; i < DETAIL_FIELDS.length; i++) {
-                const key = DETAIL_FIELDS[i].key;
-                const items = item.details[key];
-                if (items) {
-                    const doneItems = [];
-                    items.forEach(item => {
-                        if (item.done) {
-                            doneItems.push(item.text);
-                        }
-                    });
-                    if (doneItems.length) {
-                        done.push({key: key, items: doneItems});
-                    }
-                }
-            }
-            return done;
-        });
+						if (!found) {
+							this.informIncorrect(token, guess.detailField.key);
+						}
+					}
+				}
+				return quizItem;
+			})
+			.startWith(quizItem)
+		)
+		.map(getProgress)
+		.publish()
+
+		;
+	private guesses = new Subject<Guess>();
+	// guesses: Observable<Guess> = this.command
+	// 	.map((command) : RegExpMatchArray => command.match(/^(\w{2})\s+(.+)$/))
+	// 	.filter(match => !!match)
+	// 	.map((match) : Guess => ({
+	// 		detailField: getDetailField(match[1].toLowerCase()),
+	// 		tokens: match[2].split(',')
+	// 	}))
+	// 	.filter(guess => !!guess.detailField);
+
+	// progress: Observable<Progress> = this.quizItem
+	// 	.switchMap(quizItem => this.guesses
+	// 		.map(guess => {
+
+	// 		})
+	// 		.startWith(getProgress(quizItem))
+	// 	);
+	// 		const firstItem = getProgress(quizItem);
+	// 		return 
+	// 		.map(guess => {
+	// 			for (var i = 0; i < guess.tokens.length; i++) {
+	// 				const token = tokens[i].trim();
+	// 				if (this.isAdequateLength(token)){
+	// 					let found = false;
+	// 					if (itemField) {
+	// 						for (let j = itemField.length - 1; j >= 0; j--) {
+	// 							const subItem = itemField[j];
+	// 							if (!subItem.done && this.tokenMatches(token, detailField.key, subItem.text)){
+	// 								found = subItem.done = true;
+	// 								quizItem.remainder--;
+	// 								if (quizItem.remainder == 0) {
+	// 									this.logSource.next(`Completed "${quizItem.id}"`);
+	// 									this.itemId.nextItem();
+	// 									return quizItem;
+	// 								}
+	// 								break;
+	// 							}
+	// 						}
+	// 					}
+	// 					if (!found) {
+	// 						this.informIncorrect(token, detailField.key);
+	// 					}
+	// 				}
+	// 			}
+	// 		})
+	// 		;
+	// });
+	// 	.withLatestFrom(this.quizItem)
+	// 	.map(([command, quizItem]) => {})
+	// 	.startWith(this.quizItem.)
+	// ;
+	// doneItem: Observable<DoneItem[]> = this.itemId
+	// 	.switchMap(itemId => this.afs.firestore.collection('/details').doc(itemId).get())
+	// 	.do(snapshot => {
+	// 		if (!snapshot.exists) {
+	// 			console.log('Snapshot is empty, skipping...');
+	// 			this.itemId.nextItem();
+	// 		}
+	// 	})
+	// 	.filter(snapshot => snapshot.exists)
+	// 	.map(snapshot => {
+	// 		const quizDetails : QuizDetails = {};
+	// 		const data = snapshot.data();
+	// 		let count = 0;
+	// 		for (let key in data) {
+	// 			if (data[key].length) {
+	// 				const fieldDetails: QuizDetail[] = [];
+	// 				for (let j = 0; j < data[key].length; j++) {
+	// 					const text: string = data[key][j];
+	// 					fieldDetails.push({text: text, done: false});
+	// 					count++;
+	// 				}
+	// 				quizDetails[key] = fieldDetails;
+	// 			}
+	// 		}
+	// 		return {
+	// 			id: snapshot.id,
+	// 			details: quizDetails,
+	// 			total: count,
+	// 			remainder: count
+	// 		};
+	// 	})
+	// 	.filter(quizItem => quizItem.total > 0)
+	// 	.switchMap((quizItem) : Observable<QuizItem> => this.command.map(command => {
+	// 		this.logSource.next(`${quizItem.id} > ${command}`);
+	//     	command = command.trim();
+	//     	if (command.length) {
+	// 	    	switch (command) {
+	// 	    		case 'help':
+	// 	    			this.printHelp();
+	// 	    			break;
+	//     			case 'keys':
+	//     				this.printKeys();
+	// 	    			break;
+	// 	    	 	case 'skip':
+	// 		 	    	this.logSource.next(`Skipping ${quizItem.id}`);
+	// 	    			this.itemId.nextItem();
+	// 	    			break;
+	//     	 		case 'cheat':
+	// 					for (let i = 0; i < DETAIL_FIELDS.length; i++) {
+	// 						const detailField = DETAIL_FIELDS[i];
+	// 						if (detailField.key in quizItem.details){
+	// 							const subItems = quizItem.details[detailField.key];
+	// 							for (let j = 0; j < subItems.length; j++) {
+	// 								const subItem = subItems[j];
+	// 								if (!subItem.done) {
+	// 									this.logSource.next(detailField.key);
+	// 									this.logSource.next(`- ${subItem.text}`);
+	// 								}
+	// 							}
+	// 						}
+	// 					}
+	// 	    			return quizItem;
+	// 	    	 	default:
+	// 					const match = command.match(/^(\w{2})\s+(.+)$/);
+	// 				    if (match) {
+	// 				    	const shortcut = match[1].toLowerCase();
+	// 				    	const detailField = getDetailField(shortcut);
+	// 				    	if (detailField) {
+	// 							const itemField = quizItem.details[detailField.key];
+	// 				    		const tokens = match[2].split(',');
+	// 							for (var i = 0; i < tokens.length; i++) {
+	// 								const token = tokens[i].trim();
+	// 								if (this.isAdequateLength(token)){
+	// 									let found = false;
+	// 									if (itemField) {
+	// 										for (let j = itemField.length - 1; j >= 0; j--) {
+	// 											const subItem = itemField[j];
+	// 											if (!subItem.done && this.tokenMatches(token, detailField.key, subItem.text)){
+	// 												found = subItem.done = true;
+	// 												quizItem.remainder--;
+	// 												if (quizItem.remainder == 0) {
+	// 													this.logSource.next(`Completed "${quizItem.id}"`);
+	// 													this.itemId.nextItem();
+	// 													return quizItem;
+	// 												}
+	// 												break;
+	// 											}
+	// 										}
+	// 									}
+	// 									if (!found) {
+	// 										this.informIncorrect(token, detailField.key);
+	// 									}
+	// 								}
+	// 							}
+	// 						} else {
+	// 					        this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);		
+	// 				    	}
+	// 				    } else {
+	// 				        this.logSource.next(`Invalid command: "${command}". Try "help"`);		
+	// 				    }
+	// 	    	}
+	// 	    }
+	// 		return quizItem;
+	// 	})
+	// 	.startWith(quizItem)
+	// 	// .map(quizItem => {
+	// 	).map((item) : DoneItem[] => {
+ //            let done : DoneItem[] = [];
+ //            for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+ //                const key = DETAIL_FIELDS[i].key;
+ //                const items = item.details[key];
+ //                if (items) {
+ //                    const doneItems = [];
+ //                    items.forEach(item => {
+ //                        if (item.done) {
+ //                            doneItems.push(item.text);
+ //                        }
+ //                    });
+ //                    if (doneItems.length) {
+ //                        done.push({key: key, items: doneItems});
+ //                    }
+ //                }
+ //            }
+ //            return done;
+ //        });
 
 	sendCommand(command: string) {
-		this.command.next(command || '');
+		if (command) {
+			command = command.trim();
+			if (command) {
+				this.command.next(command);
+			}
+		}
 	}
 
 	private isAdequateLength(token){
