@@ -99,7 +99,7 @@ export interface PrintField {
 }
 
 export interface Progress {
-    id: string; 
+    id: string;
     completed: PrintField[];
     remaining: PrintField[];
 }

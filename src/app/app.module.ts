@@ -5,11 +5,8 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { RouterModule, Routes } from '@angular/router';
 
-// import { TerminalModule } from 'primeng/terminal';
-import { ButtonModule } from 'primeng/button';
-import { InputSwitchModule } from 'primeng/inputswitch';
-
-// import { TerminalModule } from 'primeng/terminal';
+// import { ButtonModule } from 'primeng/button';
+// import { InputSwitchModule } from 'primeng/inputswitch';
 
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -18,9 +15,9 @@ import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
 import { DetailFieldFilterPipe, SubItemsDoneFilter } from './detail-field-filter.pipe';
 import { AddStringComponent } from './add-string/add-string.component';
-import { QuizTerminalComponent } from './quiz-terminal/quiz-terminal.component';
 import { TerminalComponent } from './terminal/terminal.component';
 import { EditStateService } from './edit-state.service';
+import { EditButtonComponent } from './edit-button/edit-button.component';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCNC0Rl6WPNd1qzTpyVchkyImJc1Fy4T54',
@@ -38,7 +35,7 @@ const appRoutes: Routes = [
   },
   {
     path: 'quiz',
-    component: QuizTerminalComponent,
+    component: TerminalComponent,
   },
   {
     path: 'regions',
@@ -74,15 +71,14 @@ const appRoutes: Routes = [
     AddStringComponent,
     DetailFieldFilterPipe,
     SubItemsDoneFilter,
-    QuizTerminalComponent,
     TerminalComponent,
+    EditButtonComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    // TerminalModule,
-    ButtonModule,
-    InputSwitchModule,
+    // ButtonModule,
+    // InputSwitchModule,
     AngularFireModule.initializeApp(firebaseConfig),
     AngularFirestoreModule,
     RouterModule.forRoot(appRoutes, { enableTracing: false })

@@ -14,7 +14,7 @@ export class DetailFieldFilterPipe implements PipeTransform {
 })
 export class SubItemsDoneFilter implements PipeTransform {
   transform = (subItems: QuizDetail[]): QuizDetail[] => {
-  	let ret = subItems.filter(subItem => subItem.done);
+  	const ret = subItems.filter(subItem => subItem.done);
   	console.log(JSON.stringify(ret));
   	return ret;
   }

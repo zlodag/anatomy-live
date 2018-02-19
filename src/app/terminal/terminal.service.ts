@@ -27,13 +27,13 @@ interface Guess {
 	tokens: string[];
 }
 
-function getProgress(quizItem: QuizItem) : Progress {
-	let progress: Progress = {
+function getProgress(quizItem: QuizItem): Progress {
+	const progress: Progress = {
 		id: quizItem.id,
 		completed: [],
 		remaining: []
 	};
-    for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+    for (let i = 0; i < DETAIL_FIELDS.length; i++) {
         const key = DETAIL_FIELDS[i].key;
         if (key in quizItem.details) {
             const completed = [];
@@ -52,7 +52,7 @@ function getProgress(quizItem: QuizItem) : Progress {
 
 @Injectable()
 export class TerminalService {
-    
+
 	constructor(private readonly afs: AngularFirestore) {
 		this.progress.connect();
 	}
@@ -70,10 +70,10 @@ export class TerminalService {
 		})
 		.filter(snapshot => snapshot.exists)
 		.map(snapshot => {
-			const quizDetails : QuizDetails = {};
+			const quizDetails: QuizDetails = {};
 			const data = snapshot.data();
 			let count = 0;
-			for (let key in data) {
+			for (const key in data) {
 				if (data[key].length) {
 					const fieldDetails: QuizDetail[] = [];
 					for (let j = 0; j < data[key].length; j++) {
@@ -126,15 +126,15 @@ export class TerminalService {
 	    				return true;
 	    		}
 			})
-			.map((command) : RegExpMatchArray => {
+			.map((command): RegExpMatchArray => {
 				const match = command.match(/^(\w{2})\s+(.+)$/);
 				if (!match) {
-			        this.logSource.next(`Invalid command: "${command}". Try "help"`);		
+			        this.logSource.next(`Invalid command: "${command}". Try "help"`);
 				}
 				return match;
 			})
 			.filter(match => !!match)
-			.map((match) : Guess => {
+			.map((match): Guess => {
 				const shortcut = match[1].toLowerCase();
 				const detailField = getDetailField(shortcut);
 				if (!detailField) {
@@ -147,15 +147,15 @@ export class TerminalService {
 			})
 			.filter(guess => !!guess.detailField)
 			.map(guess => {
-				for (var i = 0; i < guess.tokens.length; i++) {
+				for (let i = 0; i < guess.tokens.length; i++) {
 					const token = guess.tokens[i].trim();
-					if (this.isAdequateLength(token)){
+					if (this.isAdequateLength(token)) {
 						let found = false;
 						if (guess.detailField.key in quizItem.details) {
 							const subItems = quizItem.details[guess.detailField.key];
 							for (let j = 0; j < subItems.length; j++) {
 								const subItem = subItems[j];
-								if (!subItem.done && this.tokenMatches(token, guess.detailField.key, subItem.text)){
+								if (!subItem.done && this.tokenMatches(token, guess.detailField.key, subItem.text)) {
 									found = subItem.done = true;
 									quizItem.remainder--;
 									if (quizItem.remainder == 0) {
@@ -198,7 +198,7 @@ export class TerminalService {
 	// 		.startWith(getProgress(quizItem))
 	// 	);
 	// 		const firstItem = getProgress(quizItem);
-	// 		return 
+	// 		return
 	// 		.map(guess => {
 	// 			for (var i = 0; i < guess.tokens.length; i++) {
 	// 				const token = tokens[i].trim();
@@ -326,10 +326,10 @@ export class TerminalService {
 	// 								}
 	// 							}
 	// 						} else {
-	// 					        this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);		
+	// 					        this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);
 	// 				    	}
 	// 				    } else {
-	// 				        this.logSource.next(`Invalid command: "${command}". Try "help"`);		
+	// 				        this.logSource.next(`Invalid command: "${command}". Try "help"`);
 	// 				    }
 	// 	    	}
 	// 	    }
@@ -366,7 +366,7 @@ export class TerminalService {
 		}
 	}
 
-	private isAdequateLength(token){
+	private isAdequateLength(token) {
 		if (token.length <= 2) {
 			this.logSource.next(`✘ Entry must be 3 or more characters: "${token}"`);
 			return false;
@@ -383,7 +383,7 @@ export class TerminalService {
 		return false;
 	}
 
-	private informCorrect(answer, indexStart, indexEnd, label){
+	private informCorrect(answer, indexStart, indexEnd, label) {
 		this.logSource.next(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
 	}
 
@@ -391,14 +391,14 @@ export class TerminalService {
 		this.logSource.next(`✘ ${label}: ${token}`);
 	}
 
-	private printKeys(){
+	private printKeys() {
 		for (let i = 0; i < DETAIL_FIELDS.length; i++) {
 			const detailField = DETAIL_FIELDS[i];
 			this.logSource.next(`${detailField.shortcut}: ${detailField.key}`);
 		}
 	}
 
-    private printHelp(){
+    private printHelp() {
     	[
     		'<key> <guess>[,<guess>...]: Attempt answer(s) to current item for the specified key',
     		'skip: Skip current item',
@@ -409,10 +409,10 @@ export class TerminalService {
     }
 }
 
-function getDetailField(shortcut: string) : DetailField {
-	for (var i = 0; i < DETAIL_FIELDS.length; i++) {
+function getDetailField(shortcut: string): DetailField {
+	for (let i = 0; i < DETAIL_FIELDS.length; i++) {
 		const detailField = DETAIL_FIELDS[i];
-		if (shortcut == detailField.shortcut){
+		if (shortcut == detailField.shortcut) {
 			return detailField;
 		}
 	}
