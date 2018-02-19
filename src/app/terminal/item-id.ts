@@ -1,5 +1,4 @@
 import { Subject } from 'rxjs/Subject';
-import { AngularFirestore } from 'angularfire2/firestore';
 import { firestore } from 'firebase';
 
 export class ItemId extends Subject<string> {
@@ -26,7 +25,6 @@ export class ItemId extends Subject<string> {
 			this.next(this.itemIds[this.itemIndex]);
 			this.itemIndex++;
 		} else {
-			// this.next(null);
 			this.complete();
 		}
 	}

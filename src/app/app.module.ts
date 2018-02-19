@@ -5,9 +5,6 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { RouterModule, Routes } from '@angular/router';
 
-// import { ButtonModule } from 'primeng/button';
-// import { InputSwitchModule } from 'primeng/inputswitch';
-
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { RegionListComponent } from './region-list/region-list.component';
