@@ -75,6 +75,7 @@ export interface Details {
     'Lymphatic drainage'?: string[];
 
     'Variants'?: string[];
+
 }
 
 export interface QuizDetail {
@@ -102,4 +103,9 @@ export interface Progress {
     id: string;
     completed: PrintField[];
     remaining: PrintField[];
+}
+
+export interface Guess {
+  detailField: DetailField;
+  tokens: string[];
 }

@@ -1,70 +1,52 @@
 import { Injectable } from '@angular/core';
 
 import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
-import { Subscriber } from 'rxjs/Subscriber';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/withLatestFrom';
 import 'rxjs/add/operator/startWith';
-import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/publish';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/observable/fromPromise';
 
-
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from 'angularfire2/firestore';
-import { firestore } from 'firebase';
-import { Details, DetailField, DETAIL_FIELDS, QuizItem, QuizDetail, QuizDetails, PrintField, Progress } from '../models';
+import { AngularFirestore } from 'angularfire2/firestore';
+import { DETAIL_FIELDS, QuizItem, QuizDetail, QuizDetails, Guess, PrintField } from '../models';
 import { ItemId } from './item-id';
 
-interface Guess {
-	detailField: DetailField;
-	tokens: string[];
-}
-
-function getProgress(quizItem: QuizItem): Progress {
-	const progress: Progress = {
-		id: quizItem.id,
-		completed: [],
-		remaining: []
-	};
+function getProgress(quizItem: QuizItem, done: boolean): PrintField[] {
+	const fields: PrintField[] = [];
     for (let i = 0; i < DETAIL_FIELDS.length; i++) {
         const key = DETAIL_FIELDS[i].key;
         if (key in quizItem.details) {
-            const completed = [];
-            const remaining = [];
-            quizItem.details[key].forEach(item => (item.done ? completed : remaining).push(item.text));
-            if (completed.length) {
-                progress.completed.push({key: key, items: completed});
-            }
-            if (remaining.length) {
-                progress.remaining.push({key: key, items: remaining});
+            const items: string[] = [];
+            quizItem.details[key].forEach(item => {
+            	if (item.done == done) {
+            		items.push(item.text);
+            	}
+            });
+            if (items.length) {
+                fields.push({key: key, items: items});
             }
         }
     }
-    return progress;
+    return fields;
 }
 
 @Injectable()
 export class TerminalService {
 
 	constructor(private readonly afs: AngularFirestore) {
-		this.progress.connect();
 	}
-    private logSource = new Subject<string>();
-    response: Observable<string> = this.logSource.asObservable();
+	private input = new Subject<string>();
+    output = new Subject<string>();
 	itemId = new ItemId(this.afs.firestore.collection('/items'));
-	private command = new Subject<string>();
 	progress = this.itemId
 		.switchMap(itemId => this.afs.firestore.collection('/details').doc(itemId).get())
 		.do(snapshot => {
 			if (!snapshot.exists) {
-	 	    	this.logSource.next(`Skipping ${snapshot.id} (no data)`);
+	 	    	this.output.next(`Skipping ${snapshot.id} (no data)`);
 				this.itemId.nextItem();
 			}
 		})
@@ -93,14 +75,14 @@ export class TerminalService {
 		})
 		.do(quizItem => {
 			if (quizItem.total == 0) {
-	 	    	this.logSource.next(`Skipping ${quizItem.id} (no data)`);
+	 	    	this.output.next(`Skipping ${quizItem.id} (no data)`);
 				this.itemId.nextItem();
 			}
 		})
 		.filter(quizItem => quizItem.total > 0)
-		.switchMap(quizItem => this.command
+		.switchMap(quizItem => this.input
 			.filter(command => {
-				this.logSource.next(`${quizItem.id} > ${command}`);
+				this.output.next(`${quizItem.id} > ${command}`);
 				switch (command) {
 		    		case 'help':
 		    			this.printHelp();
@@ -109,43 +91,39 @@ export class TerminalService {
 	    				this.printKeys();
 		    			return false;
 		    	 	case 'skip':
-			 	    	this.logSource.next(`Skipping ${quizItem.id}`);
+			 	    	this.output.next(`Skipping ${quizItem.id}`);
 		    			this.itemId.nextItem();
 		    			return false;
 	    	 		case 'cheat':
-	    	 			const progress = getProgress(quizItem).remaining;
-						for (let i = 0; i < progress.length; i++) {
-							const field = progress[i];
-							this.logSource.next(field.key);
-							for (let j = 0; j < field.items.length; j++) {
-								this.logSource.next(`- ${field.items[j]}`);
-							}
-						}
+	    	 			this.cheat(quizItem);
 		    			return false;
 	    			default:
 	    				return true;
 	    		}
 			})
 			.map((command): RegExpMatchArray => {
-				const match = command.match(/^(\w{2})\s+(.+)$/);
+				const match = command.match(/^([A-Za-z]{2})\s+(.+)$/);
 				if (!match) {
-			        this.logSource.next(`Invalid command: "${command}". Try "help"`);
+			        this.output.next(`Invalid command: "${command}". Try "help"`);
 				}
 				return match;
 			})
 			.filter(match => !!match)
 			.map((match): Guess => {
 				const shortcut = match[1].toLowerCase();
-				const detailField = getDetailField(shortcut);
-				if (!detailField) {
-		        	this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);
+				for (let i = 0; i < DETAIL_FIELDS.length; i++) {
+					const detailField = DETAIL_FIELDS[i];
+					if (shortcut == detailField.shortcut) {
+						return {
+							detailField: detailField,
+							tokens: match[2].split(',')
+						};
+					}
 				}
-				return {
-					detailField: detailField,
-					tokens: match[2].split(',')
-				};
+	        	this.output.next(`Invalid key: "${shortcut}". Try "keys"`);
+				return null;
 			})
-			.filter(guess => !!guess.detailField)
+			.filter(guess => guess != null)
 			.map(guess => {
 				for (let i = 0; i < guess.tokens.length; i++) {
 					const token = guess.tokens[i].trim();
@@ -159,7 +137,7 @@ export class TerminalService {
 									found = subItem.done = true;
 									quizItem.remainder--;
 									if (quizItem.remainder == 0) {
-										this.logSource.next(`Completed "${quizItem.id}"`);
+										this.output.next(`Completed "${quizItem.id}"`);
 										this.itemId.nextItem();
 										return quizItem;
 									}
@@ -176,199 +154,25 @@ export class TerminalService {
 			})
 			.startWith(quizItem)
 		)
-		.map(getProgress)
+		.map(quizItem => ({
+			id: quizItem.id,
+			completed: getProgress(quizItem, true)
+		}))
 		.publish()
-
 		;
-	// private guesses = new Subject<Guess>();
-	// guesses: Observable<Guess> = this.command
-	// 	.map((command) : RegExpMatchArray => command.match(/^(\w{2})\s+(.+)$/))
-	// 	.filter(match => !!match)
-	// 	.map((match) : Guess => ({
-	// 		detailField: getDetailField(match[1].toLowerCase()),
-	// 		tokens: match[2].split(',')
-	// 	}))
-	// 	.filter(guess => !!guess.detailField);
-
-	// progress: Observable<Progress> = this.quizItem
-	// 	.switchMap(quizItem => this.guesses
-	// 		.map(guess => {
-
-	// 		})
-	// 		.startWith(getProgress(quizItem))
-	// 	);
-	// 		const firstItem = getProgress(quizItem);
-	// 		return
-	// 		.map(guess => {
-	// 			for (var i = 0; i < guess.tokens.length; i++) {
-	// 				const token = tokens[i].trim();
-	// 				if (this.isAdequateLength(token)){
-	// 					let found = false;
-	// 					if (itemField) {
-	// 						for (let j = itemField.length - 1; j >= 0; j--) {
-	// 							const subItem = itemField[j];
-	// 							if (!subItem.done && this.tokenMatches(token, detailField.key, subItem.text)){
-	// 								found = subItem.done = true;
-	// 								quizItem.remainder--;
-	// 								if (quizItem.remainder == 0) {
-	// 									this.logSource.next(`Completed "${quizItem.id}"`);
-	// 									this.itemId.nextItem();
-	// 									return quizItem;
-	// 								}
-	// 								break;
-	// 							}
-	// 						}
-	// 					}
-	// 					if (!found) {
-	// 						this.informIncorrect(token, detailField.key);
-	// 					}
-	// 				}
-	// 			}
-	// 		})
-	// 		;
-	// });
-	// 	.withLatestFrom(this.quizItem)
-	// 	.map(([command, quizItem]) => {})
-	// 	.startWith(this.quizItem.)
-	// ;
-	// doneItem: Observable<DoneItem[]> = this.itemId
-	// 	.switchMap(itemId => this.afs.firestore.collection('/details').doc(itemId).get())
-	// 	.do(snapshot => {
-	// 		if (!snapshot.exists) {
-	// 			console.log('Snapshot is empty, skipping...');
-	// 			this.itemId.nextItem();
-	// 		}
-	// 	})
-	// 	.filter(snapshot => snapshot.exists)
-	// 	.map(snapshot => {
-	// 		const quizDetails : QuizDetails = {};
-	// 		const data = snapshot.data();
-	// 		let count = 0;
-	// 		for (let key in data) {
-	// 			if (data[key].length) {
-	// 				const fieldDetails: QuizDetail[] = [];
-	// 				for (let j = 0; j < data[key].length; j++) {
-	// 					const text: string = data[key][j];
-	// 					fieldDetails.push({text: text, done: false});
-	// 					count++;
-	// 				}
-	// 				quizDetails[key] = fieldDetails;
-	// 			}
-	// 		}
-	// 		return {
-	// 			id: snapshot.id,
-	// 			details: quizDetails,
-	// 			total: count,
-	// 			remainder: count
-	// 		};
-	// 	})
-	// 	.filter(quizItem => quizItem.total > 0)
-	// 	.switchMap((quizItem) : Observable<QuizItem> => this.command.map(command => {
-	// 		this.logSource.next(`${quizItem.id} > ${command}`);
-	//     	command = command.trim();
-	//     	if (command.length) {
-	// 	    	switch (command) {
-	// 	    		case 'help':
-	// 	    			this.printHelp();
-	// 	    			break;
-	//     			case 'keys':
-	//     				this.printKeys();
-	// 	    			break;
-	// 	    	 	case 'skip':
-	// 		 	    	this.logSource.next(`Skipping ${quizItem.id}`);
-	// 	    			this.itemId.nextItem();
-	// 	    			break;
-	//     	 		case 'cheat':
-	// 					for (let i = 0; i < DETAIL_FIELDS.length; i++) {
-	// 						const detailField = DETAIL_FIELDS[i];
-	// 						if (detailField.key in quizItem.details){
-	// 							const subItems = quizItem.details[detailField.key];
-	// 							for (let j = 0; j < subItems.length; j++) {
-	// 								const subItem = subItems[j];
-	// 								if (!subItem.done) {
-	// 									this.logSource.next(detailField.key);
-	// 									this.logSource.next(`- ${subItem.text}`);
-	// 								}
-	// 							}
-	// 						}
-	// 					}
-	// 	    			return quizItem;
-	// 	    	 	default:
-	// 					const match = command.match(/^(\w{2})\s+(.+)$/);
-	// 				    if (match) {
-	// 				    	const shortcut = match[1].toLowerCase();
-	// 				    	const detailField = getDetailField(shortcut);
-	// 				    	if (detailField) {
-	// 							const itemField = quizItem.details[detailField.key];
-	// 				    		const tokens = match[2].split(',');
-	// 							for (var i = 0; i < tokens.length; i++) {
-	// 								const token = tokens[i].trim();
-	// 								if (this.isAdequateLength(token)){
-	// 									let found = false;
-	// 									if (itemField) {
-	// 										for (let j = itemField.length - 1; j >= 0; j--) {
-	// 											const subItem = itemField[j];
-	// 											if (!subItem.done && this.tokenMatches(token, detailField.key, subItem.text)){
-	// 												found = subItem.done = true;
-	// 												quizItem.remainder--;
-	// 												if (quizItem.remainder == 0) {
-	// 													this.logSource.next(`Completed "${quizItem.id}"`);
-	// 													this.itemId.nextItem();
-	// 													return quizItem;
-	// 												}
-	// 												break;
-	// 											}
-	// 										}
-	// 									}
-	// 									if (!found) {
-	// 										this.informIncorrect(token, detailField.key);
-	// 									}
-	// 								}
-	// 							}
-	// 						} else {
-	// 					        this.logSource.next(`Invalid key: "${shortcut}". Try "keys"`);
-	// 				    	}
-	// 				    } else {
-	// 				        this.logSource.next(`Invalid command: "${command}". Try "help"`);
-	// 				    }
-	// 	    	}
-	// 	    }
-	// 		return quizItem;
-	// 	})
-	// 	.startWith(quizItem)
-	// 	// .map(quizItem => {
-	// 	).map((item) : DoneItem[] => {
- //            let done : DoneItem[] = [];
- //            for (var i = 0; i < DETAIL_FIELDS.length; i++) {
- //                const key = DETAIL_FIELDS[i].key;
- //                const items = item.details[key];
- //                if (items) {
- //                    const doneItems = [];
- //                    items.forEach(item => {
- //                        if (item.done) {
- //                            doneItems.push(item.text);
- //                        }
- //                    });
- //                    if (doneItems.length) {
- //                        done.push({key: key, items: doneItems});
- //                    }
- //                }
- //            }
- //            return done;
- //        });
 
 	sendCommand(command: string) {
 		if (command) {
 			command = command.trim();
 			if (command) {
-				this.command.next(command);
+				this.input.next(command);
 			}
 		}
 	}
 
 	private isAdequateLength(token) {
 		if (token.length <= 2) {
-			this.logSource.next(`✘ Entry must be 3 or more characters: "${token}"`);
+			this.output.next(`✘ Entry must be 3 or more characters: "${token}"`);
 			return false;
 		}
 		return true;
@@ -384,17 +188,17 @@ export class TerminalService {
 	}
 
 	private informCorrect(answer, indexStart, indexEnd, label) {
-		this.logSource.next(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
+		this.output.next(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
 	}
 
 	private informIncorrect(token, label) {
-		this.logSource.next(`✘ ${label}: ${token}`);
+		this.output.next(`✘ ${label}: ${token}`);
 	}
 
 	private printKeys() {
 		for (let i = 0; i < DETAIL_FIELDS.length; i++) {
 			const detailField = DETAIL_FIELDS[i];
-			this.logSource.next(`${detailField.shortcut}: ${detailField.key}`);
+			this.output.next(`${detailField.shortcut}: ${detailField.key}`);
 		}
 	}
 
@@ -405,16 +209,17 @@ export class TerminalService {
     		'cheat: Display answer(s) to current item',
     		'keys: Display a list of keys',
     		'help: Display this message',
-    	].forEach(line => this.logSource.next(line));
+    	].forEach(line => this.output.next(line));
     }
-}
 
-function getDetailField(shortcut: string): DetailField {
-	for (let i = 0; i < DETAIL_FIELDS.length; i++) {
-		const detailField = DETAIL_FIELDS[i];
-		if (shortcut == detailField.shortcut) {
-			return detailField;
+    private cheat(quizItem: QuizItem){
+		const remaining = getProgress(quizItem, false);
+		for (let i = 0; i < remaining.length; i++) {
+			const field = remaining[i];
+			this.output.next(`${field.key} (${field.items.length})`);
+			for (let j = 0; j < field.items.length; j++) {
+				this.output.next(`- ${field.items[j]}`);
+			}
 		}
 	}
-	return null;
 }

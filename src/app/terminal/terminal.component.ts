@@ -1,15 +1,6 @@
-import {NgModule, Component, OnInit, AfterViewInit, AfterViewChecked, OnDestroy, Input, Output, EventEmitter, ElementRef} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {CommonModule} from '@angular/common';
-import {TerminalService} from './terminal.service';
-import {Subscription}   from 'rxjs/Subscription';
-import { Observable } from 'rxjs/Observable';
-import { QuizItem, Details, DETAIL_FIELDS } from '../models';
-
-interface Line {
-	text: string;
-	command: boolean;
-}
+import { NgModule, Component, OnInit, AfterViewInit, AfterViewChecked, OnDestroy, ElementRef } from '@angular/core';
+import { TerminalService } from './terminal.service';
+import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
     selector: 'app-terminal',
@@ -31,13 +22,13 @@ export class TerminalComponent implements OnInit, AfterViewInit, AfterViewChecke
     itemSubscription: Subscription;
 
     constructor(public el: ElementRef, public terminalService: TerminalService) {
+        this.terminalService.progress.connect();
     }
 
-    // item: QuizItem = null;
     itemId: string = null;
 
     ngOnInit() {
-        this.responseSubscription = this.terminalService.response.subscribe(text => {
+        this.responseSubscription = this.terminalService.output.subscribe(text => {
             this.lines.push(text);
             this.scrollToBottom = true;
         });
@@ -50,21 +41,6 @@ export class TerminalComponent implements OnInit, AfterViewInit, AfterViewChecke
                 this.lines.push('Finished!');
             }
         );
-        // this.terminalService.itemId.subscribe(
-        //     itemId => {
-        //         this.itemId = itemId;
-        //     },
-        //     error => {},
-        //     () => {
-        //         this.itemSubscription.unsubscribe();
-        //         console.log('finished');
-        //         this.done = [];
-        //         this.item = null;
-        //     }
-        // )
-
-        // this.terminalService.item.subscribe(item => item.remainder)
-        // this.itemSubscription = this.terminalService.item.subscribe(item => this.item = item, error => {}, () => this.item = null);
     }
 
     ngAfterViewInit() {
