@@ -1,4 +1,6 @@
 import { NgModule, Component, OnInit, AfterViewInit, AfterViewChecked, OnDestroy, ElementRef } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
 import { Subject } from 'rxjs/Subject';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
@@ -11,29 +13,29 @@ import 'rxjs/add/operator/withLatestFrom';
 import 'rxjs/add/observable/fromPromise';
 
 import { AngularFirestore } from 'angularfire2/firestore';
+import { firestore } from 'firebase';
 import { DETAIL_FIELDS, QuizDetail, QuizDetails, QuizItem, PrintField } from '../models';
 import { ItemId } from './item-id';
 
 @Component({
-    selector: 'app-terminal',
-	templateUrl: './terminal.component.html',
-	styleUrls: ['./terminal.component.css'],
+    selector: 'app-quiz',
+	templateUrl: './quiz.component.html',
+	styleUrls: ['./quiz.component.css'],
 })
-export class TerminalComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
+export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
 
     lines: string[] = [];
 
     command: string;
 
-    container: Element;
+    terminal: Element;
 
     scrollToBottom: boolean;
 
-    // responseSubscription: Subscription;
     itemSubscription: Subscription;
     commandSubscription: Subscription;
 
-    constructor(private readonly afs: AngularFirestore, public el: ElementRef) {
+    constructor(private route: ActivatedRoute, private readonly afs: AngularFirestore, public el: ElementRef) {
     }
 
     itemId: string = null;
@@ -116,8 +118,15 @@ export class TerminalComponent implements OnInit, AfterViewInit, AfterViewChecke
 
     progress = new BehaviorSubject<PrintField[]>([]);
     private input = new Subject<string>();
-    itemIdObservable = new ItemId(this.afs.firestore.collection('/items'));
+    itemIdObservable = new ItemId(
+        this.route.snapshot.paramMap.has('itemId') ?
+        [this.route.snapshot.paramMap.get('itemId')] :
+        this.route.snapshot.paramMap.has('regionId') ?
+        this.afs.firestore.collection('/items').where('region', '==', this.route.snapshot.paramMap.get('regionId')) :
+        this.afs.firestore.collection('/items')
+    );
     private quizItem = this.itemIdObservable
+        .filter(itemId => itemId !== null)
         .do(itemId => this.progress.next([]))
         .switchMap(itemId => Observable
             .fromPromise(this.afs.firestore.collection('/details').doc(itemId).get())
@@ -218,12 +227,12 @@ export class TerminalComponent implements OnInit, AfterViewInit, AfterViewChecke
     }
 
     ngAfterViewInit() {
-        this.container = this.el.nativeElement.querySelector('#anatomy-terminal');
+        this.terminal = this.el.nativeElement.querySelector('#terminal');
     }
 
     ngAfterViewChecked() {
         if (this.scrollToBottom) {
-            this.container.scrollTop = this.container.scrollHeight;
+            this.terminal.scrollTop = this.terminal.scrollHeight;
             this.scrollToBottom = false;
         }
     }

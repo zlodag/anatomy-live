@@ -1,18 +1,16 @@
-#anatomy-terminal {
+#terminal {
     height: 18em;
     height: 80vh;
     overflow: auto;
     border: 1px solid black;
-    /*background: black;*/
     padding: 1em;
-    /*color: white;*/
     font-family: monospace;
     font-size: 12px;
     float: right;
     width: 50%;
 }
 
-#anatomy-terminal input {
+#terminal input {
     border: 0 none;
     background-color: transparent;
     color: inherit;
@@ -24,18 +22,11 @@
     outline: none;
 }
 
-#anatomy-terminal input::-ms-clear {
+#terminal input::-ms-clear {
     display: none;
 }
 
-#completedList {
+#progress {
     float: left;
     width: 40%;
 }
-/*#prompt {
-    font-weight: bold;
-}*/
-/*
-#anatomy-terminal, #anatomy-terminal input {
-}
-*/

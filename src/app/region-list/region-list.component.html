@@ -1,12 +1,7 @@
-<nav>
-	<ol class="breadcrumb">
-		<li class="breadcrumb-item"><a routerLink="/">Home</a></li>
-		<li class="breadcrumb-item active">Regions</li>
-	</ol>
-</nav>
-<ul class="list-unstyled">
-	<li *ngFor="let region of regions | async" routerLinkActive="active">
+<app-breadcrumbs></app-breadcrumbs>
+<ul class="list-group">
+	<li *ngFor="let region of regions | async" class="list-group-item">
 	  	<a [routerLink]="region">{{region}}</a>
+	  	<a class="badge badge-primary float-right" [routerLink]="[region, 'quiz']">Quiz</a>
 	</li>
-	<!-- <li *ngIf="editState.edit"><app-add-string label="region" (newString)="newRegion($event)"></app-add-string></li> -->
 </ul>

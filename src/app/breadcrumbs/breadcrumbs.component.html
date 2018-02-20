@@ -1,0 +1,5 @@
+<nav>
+	<ol class="breadcrumb">
+		<li *ngFor="let crumb of crumbs; last as isLast" class="breadcrumb-item" [ngClass]="{'active': isLast}"><a *ngIf="!isLast; else elseBlock" [routerLink]="crumb.routerLink">{{ crumb.label }}</a><ng-template #elseBlock>{{ crumb.label }}</ng-template></li>
+	</ol>
+</nav>

@@ -5,12 +5,10 @@ import { Observable } from 'rxjs/Observable';
 import { EditStateService } from '../edit-state.service';
 import { Item } from '../models';
 import * as firebase from 'firebase';
-// import 'rxjs/add/operator/first';
 
 @Component({
   selector: 'app-item-list',
-  templateUrl: './item-list.component.html',
-  styleUrls: ['./item-list.component.css']
+  templateUrl: './item-list.component.html'
 })
 export class ItemListComponent implements OnInit {
 

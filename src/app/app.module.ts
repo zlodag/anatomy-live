@@ -12,9 +12,10 @@ import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
 import { DetailFieldFilterPipe, SubItemsDoneFilter } from './detail-field-filter.pipe';
 import { AddStringComponent } from './add-string/add-string.component';
-import { TerminalComponent } from './terminal/terminal.component';
+import { QuizComponent } from './quiz/quiz.component';
 import { EditStateService } from './edit-state.service';
 import { EditButtonComponent } from './edit-button/edit-button.component';
+import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCNC0Rl6WPNd1qzTpyVchkyImJc1Fy4T54',
@@ -32,10 +33,13 @@ const appRoutes: Routes = [
   },
   {
     path: 'quiz',
-    component: TerminalComponent,
+    component: QuizComponent,
   },
   {
     path: 'regions',
+    data: {
+      regions: true
+    },
     children: [
       {
         path: '',
@@ -49,8 +53,21 @@ const appRoutes: Routes = [
             component: ItemListComponent
           },
           {
+            path: 'quiz',
+            component: QuizComponent
+          },
+          {
             path: ':itemId',
-            component: ItemDetailComponent
+            children : [
+              {
+                path: '',
+                component: ItemDetailComponent
+              },
+              {
+                path: 'quiz',
+                component: QuizComponent
+              }
+            ]
           }
         ]
       }
@@ -68,8 +85,9 @@ const appRoutes: Routes = [
     AddStringComponent,
     DetailFieldFilterPipe,
     SubItemsDoneFilter,
-    TerminalComponent,
+    QuizComponent,
     EditButtonComponent,
+    BreadcrumbsComponent,
   ],
   imports: [
     BrowserModule,

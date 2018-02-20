@@ -1,11 +1,5 @@
-<nav>
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
-        <li class="breadcrumb-item active">Quiz</li>
-    </ol>
-</nav>
-
-<div id="completedList" >
+<app-breadcrumbs [quiz]="true"></app-breadcrumbs>
+<div id="progress" >
     <h4>{{ itemId }}</h4>
     <ul class="list-group" *ngIf="progress | async as progress">
         <li *ngFor="let field of progress" class="list-group-item">
@@ -17,7 +11,7 @@
     </ul>
 </div>
 
-<div id="anatomy-terminal" (click)="focus(in)">
+<div id="terminal" (click)="focus(in)">
     <div>Anatomy Quiz! (Enter "help" for help)</div>
     <div *ngFor="let line of lines">{{ line }}</div>
     <div [hidden]="!itemId">

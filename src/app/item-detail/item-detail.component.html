@@ -1,11 +1,4 @@
-<nav>
-	<ol class="breadcrumb">
-		<li class="breadcrumb-item"><a routerLink="/">Home</a></li>
-		<li class="breadcrumb-item"><a routerLink="/regions">Regions</a></li>
-		<li class="breadcrumb-item"><a routerLink="..">{{ route.snapshot.paramMap.get('regionId') }}</a></li>
-		<li class="breadcrumb-item active">{{ route.snapshot.paramMap.get('itemId') }}</li>
-	</ol>
-</nav>
+<app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
 <h4>{{ route.snapshot.paramMap.get('itemId') }}</h4>
 <ul *ngIf="itemObservable | async as item" class="list-group">
