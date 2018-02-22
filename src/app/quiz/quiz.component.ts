@@ -46,6 +46,7 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
             id => this.itemId = id,
             error => {},
             () => {
+                this.commandSubscription.unsubscribe();
                 this.itemId = null;
                 this.lines.push('Finished!');
             }
@@ -228,6 +229,7 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
 
     ngAfterViewInit() {
         this.terminal = this.el.nativeElement.querySelector('#terminal');
+        this.terminal.querySelector('input').focus();
     }
 
     ngAfterViewChecked() {

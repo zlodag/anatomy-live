@@ -14,7 +14,7 @@
 <div id="terminal" (click)="focus(in)">
     <div>Anatomy Quiz! (Enter "help" for help)</div>
     <div *ngFor="let line of lines">{{ line }}</div>
-    <div [hidden]="!itemId">
+    <div>
         <span id="prompt">{{ itemId }} ></span>
         <input #in type="text" [(ngModel)]="command" autocomplete="off" (keydown)="handleCommand($event)" autofocus />
     </div>
