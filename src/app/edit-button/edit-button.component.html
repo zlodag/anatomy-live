@@ -1,1 +1,5 @@
-<label class="float-right">Edit <input type="checkbox" [(ngModel)]="editState.edit"/></label>
+<div *ngIf="afAuth.authState | async as user; else noAuth" class="float-right">
+	<div>Welcome, {{ user.displayName }}</div>
+	<label>Edit <input type="checkbox" [(ngModel)]="editState.edit"/></label>
+</div>
+<ng-template #noAuth><firebase-ui></firebase-ui></ng-template>
