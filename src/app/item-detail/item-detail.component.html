@@ -1,10 +1,10 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
 <app-item-detail-list
-	*ngIf="itemObservable | async as details"
 	[title]="route.snapshot.paramMap.get('itemId')"
-	[details]="details"
+	[details]="itemObservable"
 	[edit]="editState.edit | async"
 	[showQuizLink]="true"
 	(update)="update($event)"
+	(delete)="delete($event)"
 	></app-item-detail-list>

@@ -19,6 +19,7 @@ import { UserListComponent } from './user-list/user-list.component';
 import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
 import { UserComponent } from './user/user.component';
+import { DeleteItemComponent } from './delete-item/delete-item.component';
 
 @NgModule({
   imports: [
@@ -43,6 +44,7 @@ import { UserComponent } from './user/user.component';
     EditStringComponent,
     ItemDetailListComponent,
     UserComponent,
+    DeleteItemComponent,
   ],
   providers: [
   ],

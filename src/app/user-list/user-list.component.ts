@@ -30,7 +30,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
   	this.sub = 
-      Observable.combineLatest(this.afs.collection('users').snapshotChanges(), this.afAuth.authState)
+      Observable.combineLatest(this.afs.collection('users', users => users.orderBy('name')).snapshotChanges(), this.afAuth.authState)
       .subscribe(([snaps, user]) => {
 
      //  });

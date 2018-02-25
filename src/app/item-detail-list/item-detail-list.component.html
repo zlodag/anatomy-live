@@ -1,7 +1,7 @@
 <h4 class="d-inline">{{ title }}</h4>
 <a  *ngIf="showQuizLink" class="badge badge-primary" routerLink="quiz">Quiz</a>
 <ul class="list-group my-3">
-    <li *ngFor="let field of details" class="list-group-item">
+    <li *ngFor="let field of details | async; first as isFirst, last as isLast" class="list-group-item">
         <h5>{{ field.key }}</h5>
         <ul class="list-unstyled">
             <li *ngFor="let entry of field.items; index as i">
@@ -15,7 +15,7 @@
 						  <input name="updatedValue" type="text" class="form-control" [ngModel]="entry" [placeholder]="field.key" required>
 						  <div class="input-group-append">
 						    <button class="btn btn-outline-info" type="submit" [disabled]="!updateForm.form.valid || !updateForm.value.updatedValue || !updateForm.value.updatedValue.trim().length || updateForm.value.updatedValue.trim() === entry">Update</button>
-						    <button class="btn btn-outline-danger" type="button" (click)="removeEntry(field.key, field.items, i)">Remove</button>
+						    <button class="btn btn-outline-danger" type="button" (click)="removeEntry(field.key, field.items, i, isFirst && isLast)">Remove</button>
 						  </div>
 						</div>
 					</div>

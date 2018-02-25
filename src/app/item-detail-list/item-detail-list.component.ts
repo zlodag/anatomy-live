@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Details } from '../models';
-import { firestore } from 'firebase';
+import { Observable } from 'rxjs/Observable';
+import { PrintField } from '../models';
 
 @Component({
   selector: 'app-item-detail-list',
@@ -13,7 +14,7 @@ export class ItemDetailListComponent implements OnInit {
 
   @Input() title: string;
 
-  @Input() details: Details;
+  @Input() details: Observable<PrintField[]>;
 
   @Input() edit: boolean = false;
 
@@ -23,70 +24,46 @@ export class ItemDetailListComponent implements OnInit {
   }
 
   @Output() update = new EventEmitter();
+  @Output() delete = new EventEmitter<string>();
 
   addEntry = (field: string, list: string[] | void, newEntry: string) => {
-    const updateObj = {};
-    updateObj[field] = [];
+    const newFields = [];
     if (list) {
-      for (let i = 0; i < list.length; ++i) {
-        updateObj[field].push(list[i]);
-      }
+      list.forEach(value => newFields.push(value));
     }
-    updateObj[field].push(newEntry);
-    this.update.emit(updateObj);
+    newFields.push(newEntry);
+    this.update.emit({[field]: newFields});
   }
 
   removeEntry = (field: string, list: string[], index: number) => {
-    // if (confirm(`Are you sure you want to remove "${list[index]}"?`)) {
-      const updateObj = {};
-      updateObj[field] = [];
-      for (let i = 0; i < list.length; i++) {
+      const newFields = [];
+      list.forEach((value, i) => {
         if (i !== index) {
-          updateObj[field].push(list[i]);
+          newFields.push(value);
         }
+      })
+      if (newFields.length) {
+        this.update.emit({[field]: newFields});
+      } else {
+        this.delete.emit(field);
       }
-      if (!updateObj[field].length) {
-        updateObj[field] = firestore.FieldValue.delete();
-      }
-      this.update.emit(updateObj);
-    // }
   }
 
   updateEntry = (field: string, list: string[], index: number, newEntry: string) => {
     if (newEntry) {
       newEntry = newEntry.trim();
       if (newEntry) {
-        const updateObj = {};
-        updateObj[field] = [];
-        for (let i = 0; i < list.length; i++) {
+        const newFields = [];
+        list.forEach((value, i) => {
           if (i === index) {
-            updateObj[field].push(newEntry);
+            newFields.push(newEntry);
           } else {
-            updateObj[field].push(list[i]);
+            newFields.push(value);
           }
-        }
-        this.update.emit(updateObj);
+        })
+        this.update.emit({[field]: newFields});
       }
     }
   }
-
-  // editEntry = (field: string, list: string[], index: number) => {
-  //   let newEntry = prompt(`Edit "${field}"`, list[index]);
-  //   if (newEntry) {
-  //     newEntry = newEntry.trim();
-  //     if (newEntry) {
-  //       const updateObj = {};
-  //       updateObj[field] = [];
-  //       for (let i = 0; i < list.length; i++) {
-  //         if (i === index) {
-  //           updateObj[field].push(newEntry);
-  //         } else {
-  //           updateObj[field].push(list[i]);
-  //         }
-  //       }
-  //       this.update.emit(updateObj);
-  //     }
-  //   }
-  // }
 
 }

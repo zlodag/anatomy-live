@@ -5,8 +5,8 @@
 <ul class="list-group my-3">
 	<li *ngFor="let item of items | async" class="list-group-item">
 	  	<a [routerLink]="item">{{item}}</a>
+	  	<app-delete-item *ngIf="editState.edit | async" (click)="deleteItem(item)"></app-delete-item>
 	  	<a class="badge badge-primary float-right" [routerLink]="[item, 'quiz']">Quiz</a>
 	</li>
-	
 </ul>
 <app-add-string *ngIf="editState.edit | async" label="Item" (newString)="newItem($event)"></app-add-string>

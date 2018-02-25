@@ -24,6 +24,7 @@ export class AddStringComponent implements OnInit {
       s = s.trim();
       if (s) {
         this.newString.emit(s);
+        this.value = '';
       }
     }
   }
