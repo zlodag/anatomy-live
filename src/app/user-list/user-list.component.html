@@ -1,0 +1,15 @@
+<app-breadcrumbs></app-breadcrumbs>
+<ul class="list-group">
+	<li *ngIf="userId" class="list-group-item">
+		<span *ngIf="myProfileName; else noProfile">
+			<a [routerLink]="userId">{{ myProfileName }}</a>
+			<app-edit-string label="Profile" [value]="myProfileName" (newString)="setProfile(userId, $event)"></app-edit-string>
+		</span>
+		<ng-template #noProfile>
+			<app-add-string label="Profile" (newString)="setProfile(userId, $event)"></app-add-string>
+		</ng-template>
+	</li>
+	<li *ngFor="let profile of otherProfiles" class="list-group-item list-group-item-secondary">
+		<a [routerLink]="profile.id">{{ profile.name }}</a>
+	</li>
+</ul>

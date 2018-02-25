@@ -1,3 +1,17 @@
-<svg class="pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" (click)="getNewString()">
+<!-- <svg class="pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" (click)="getNewString()">
   <path d="M3 0v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2z" fill="#28a745"/>
 </svg>
+ -->
+<form #addForm="ngForm" (ngSubmit)="add()" class="my-3">
+	<div class="form-group">
+		<div class="input-group">
+		  <!-- <div class="input-group-prepend">
+		    <span class="input-group-text">{{ label }}</span>
+		  </div> -->
+		  <input name="value" type="text" class="form-control" [(ngModel)]="value" [placeholder]="label" required>
+		  <div class="input-group-append">
+		    <button class="btn btn-outline-success" type="submit" [disabled]="!addForm.form.valid || !value.trim().length">Add</button>
+		  </div>
+		</div>
+	</div>
+</form>

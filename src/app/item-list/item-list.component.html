@@ -1,10 +1,12 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
-<h4>{{ route.snapshot.paramMap.get('regionId') }}</h4>
-<ul class="list-group">
+<h4 class="d-inline">{{ route.snapshot.paramMap.get('regionId') }}</h4>
+<a class="badge badge-primary" routerLink="quiz">Quiz</a>
+<ul class="list-group my-3">
 	<li *ngFor="let item of items | async" class="list-group-item">
 	  	<a [routerLink]="item">{{item}}</a>
 	  	<a class="badge badge-primary float-right" [routerLink]="[item, 'quiz']">Quiz</a>
 	</li>
-	<li *ngIf="editState.edit" class="list-group-item"><app-add-string label="item" (newString)="newItem($event)"></app-add-string></li>
+	
 </ul>
+<app-add-string *ngIf="editState.edit | async" label="Item" (newString)="newItem($event)"></app-add-string>

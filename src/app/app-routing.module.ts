@@ -1,23 +1,25 @@
 import { NgModule }              from '@angular/core';
 import { RouterModule, Routes }  from '@angular/router';
-import { LoginComponent } from './login/login.component';
-import { AuthedComponent } from './authed/authed.component';
-import { AuthGuard } from './auth.guard';
+import { UserListComponent } from './user-list/user-list.component';
+import { UserComponent } from './user/user.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
+import { UserNameResolver } from './resolvers.service';
 
 const appRoutes: Routes = [
   {
-    path: 'login',
-    component: LoginComponent
+    path: '',
+    component: UserListComponent
   },
   {
-    path: ':uid',
-    component: AuthedComponent,
-    canActivateChild: [AuthGuard],
+    path: ':userId',
+    component: UserComponent,
+    resolve: {
+      userName: UserNameResolver
+    },
     children: [
       {
         path: '',
@@ -66,11 +68,6 @@ const appRoutes: Routes = [
         ]
       }
     ]
-  },
-  {
-    path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
   }
 ];
 
@@ -78,11 +75,11 @@ const appRoutes: Routes = [
   imports: [
     RouterModule.forRoot(
       appRoutes,
-      { enableTracing: true }
+      { enableTracing: false, paramsInheritanceStrategy: 'always' }
     )
   ],
   providers: [
-    AuthGuard
+    UserNameResolver,
   ],
   exports: [
     RouterModule

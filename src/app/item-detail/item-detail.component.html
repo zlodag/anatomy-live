@@ -1,28 +1,10 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
-<h4>{{ route.snapshot.paramMap.get('itemId') }}</h4>
-<ul *ngIf="itemObservable | async as item" class="list-group">
-	<li *ngFor="let field of item | detailFields : editState.edit" class="list-group-item">
-		<h5>
-			<span>{{ field.key }}</span>
-			<app-add-string *ngIf="editState.edit" [label]="field.key" (newString)="addEntry(field.key, item[field.key], $event)"></app-add-string>
-		</h5>
-		<ul>
-			<li *ngFor="let entry of item[field.key]; index as i">
-				<span>{{ entry }}</span>
-				<span *ngIf="editState.edit">
-					<svg class="pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" (click)="editEntry(field.key, item[field.key], i)">
-					  <path d="M6 0l-1 1 2 2 1-1-2-2zm-2 2l-4 4v2h2l4-4-2-2z" fill="#17a2b8"/>
-					</svg>
-					<svg class="pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" (click)="removeEntry(field.key, item[field.key], i)">
-					  <path d="M0 0v2h8v-2h-8z" transform="translate(0 3)" fill="#dc3545"/>
-					</svg>
-					<!-- <button type="button" class="btn btn-info btn-sm" (click)="editEntry(field.key, item[field.key], i)">Edit</button> -->
-					<!-- <span class="oi oi-pencil text-info pointer" (click)="editEntry(field.key, item[field.key], i)"></span> -->
-					<!-- <button type="button" class="btn btn-danger btn-sm" (click)="removeEntry(field.key, item[field.key], i)">Remove</button> -->
-					<!-- <span  *ngIf="editState.edit" class="oi oi-trash text-danger pointer" (click)="removeEntry(field.key, item[field.key], i)"></span> -->
-				</span>
-			</li>
-		</ul>
-	</li>
-</ul>
+<app-item-detail-list
+	*ngIf="itemObservable | async as details"
+	[title]="route.snapshot.paramMap.get('itemId')"
+	[details]="details"
+	[edit]="editState.edit | async"
+	[showQuizLink]="true"
+	(update)="update($event)"
+	></app-item-detail-list>

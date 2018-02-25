@@ -3,11 +3,10 @@
     height: 80vh;
     overflow: auto;
     border: 1px solid black;
-    padding: 1em;
     font-family: monospace;
     font-size: 12px;
-    float: right;
-    width: 50%;
+    /*float: right;*/
+    /*width: 50%;*/
 }
 
 #terminal input {
@@ -24,9 +23,4 @@
 
 #terminal input::-ms-clear {
     display: none;
-}
-
-#progress {
-    float: left;
-    width: 40%;
 }

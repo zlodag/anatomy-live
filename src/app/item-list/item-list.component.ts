@@ -18,14 +18,14 @@ export class ItemListComponent implements OnInit {
   constructor(public route: ActivatedRoute, public editState: EditStateService, private readonly afs: AngularFirestore) { }
 
   ngOnInit() {
-    this.itemsCollection = this.afs.collection<Item>('/items', ref =>
+    this.itemsCollection = this.afs.collection('users').doc(this.route.snapshot.paramMap.get('userId')).collection<Item>('/items', ref =>
       ref.where('region', '==', this.route.snapshot.paramMap.get('regionId'))
     );
     this.items = this.itemsCollection.snapshotChanges().map(actions => actions.map(a => a.payload.doc.id));
   }
 
   newItem = (newEntry: string) => {
-    this.afs.collection('/items').doc<Item>(newEntry).set({
+    this.itemsCollection.doc<Item>(newEntry).set({
       ts: firebase.firestore.FieldValue.serverTimestamp(),
       region: this.route.snapshot.paramMap.get('regionId')
     });

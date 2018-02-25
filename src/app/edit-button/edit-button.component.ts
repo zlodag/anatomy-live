@@ -8,11 +8,12 @@ import { AngularFireAuth } from 'angularfire2/auth';
 })
 export class EditButtonComponent implements OnInit {
 
-  constructor(public editState: EditStateService, private afAuth: AngularFireAuth) { }
+  constructor(public editState: EditStateService) { }
 
   ngOnInit() {
   	// this.afAuth.authState.subscribe(
   	// 	// user => user.n
   }
+
 
 }

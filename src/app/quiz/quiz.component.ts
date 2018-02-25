@@ -83,7 +83,7 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
                         const initialRemainder = quizItem.remainder;
                         for (let j = 0; j < tokens.length; j++) {
                             const token = tokens[j].trim();
-                            if (this.isAdequateLength(token)) {
+                            if (token.length) {
                                 let found = false;
                                 if (detailField.key in quizItem.details) {
                                     const subItems = quizItem.details[detailField.key];
@@ -123,14 +123,14 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
         this.route.snapshot.paramMap.has('itemId') ?
         [this.route.snapshot.paramMap.get('itemId')] :
         this.route.snapshot.paramMap.has('regionId') ?
-        this.afs.firestore.collection('/items').where('region', '==', this.route.snapshot.paramMap.get('regionId')) :
-        this.afs.firestore.collection('/items')
+        this.afs.firestore.collection('users').doc(this.route.snapshot.paramMap.get('userId')).collection('items').where('region', '==', this.route.snapshot.paramMap.get('regionId')) :
+        this.afs.firestore.collection('users').doc(this.route.snapshot.paramMap.get('userId')).collection('items')
     );
     private quizItem = this.itemIdObservable
         .filter(itemId => itemId !== null)
         .do(itemId => this.progress.next([]))
         .switchMap(itemId => Observable
-            .fromPromise(this.afs.firestore.collection('/details').doc(itemId).get())
+            .fromPromise(this.afs.firestore.collection('users').doc(this.route.snapshot.paramMap.get('userId')).collection('/details').doc(itemId).get())
             .do(snapshot => {
                 if (!snapshot.exists) {
                     this.log(`Skipping ${snapshot.id} (no data)`);
@@ -172,14 +172,6 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
     log(text: string) {
         this.lines.push(text);
         this.scrollToBottom = true;
-    }
-
-    private isAdequateLength(token) {
-        if (token.length <= 2) {
-            this.log(`✘ Entry must be 3 or more characters: "${token}"`);
-            return false;
-        }
-        return true;
     }
 
     private tokenMatches(token, label, answer) {

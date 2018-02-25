@@ -1,5 +1,3 @@
-<div *ngIf="afAuth.authState | async as user; else noAuth" class="float-right">
-	<div>Welcome, {{ user.displayName }}</div>
-	<label>Edit <input type="checkbox" [(ngModel)]="editState.edit"/></label>
-</div>
-<ng-template #noAuth><firebase-ui></firebase-ui></ng-template>
+<!-- <label *ngIf="editState.edit | async as edit" class="float-right"><input type="checkbox" [(ngModel)]="editState.edit"/> Edit</label> -->
+
+<button *ngIf="editState.mine" type="button" class="btn float-right btn-sm" [ngClass]="(editState.edit | async) ? 'btn-dark' : 'btn-outline-dark'" (click)="editState.toggle()">Edit</button>
