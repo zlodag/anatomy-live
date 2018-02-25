@@ -10,6 +10,7 @@ service cloud.firestore {
         && request.resource.data.name.size() > 0;
       match /regions/{region} {
         allow read: if true;
+        allow delete: if request.auth.uid == userId;
         allow create: if request.auth.uid == userId
           && exists(/databases/$(database)/documents/users/$(userId))
           && request.resource.data.size() == 1
@@ -33,8 +34,11 @@ service cloud.firestore {
         allow read: if true;
         allow delete: if request.auth.uid == userId
           && resource.data.size() == 0;
-        allow create, update: if request.auth.uid == userId
+        allow create: if request.auth.uid == userId
+          && request.resource.data.size() == 0
           && exists(/databases/$(database)/documents/users/$(userId)/items/$(item))
+          ;
+        allow update: if request.auth.uid == userId
           && request.writeFields.size() == 1
           && request.writeFields[0] in [
               'Introduction',
@@ -62,8 +66,7 @@ service cloud.firestore {
               'Variants'
             ]
           && (
-            !(request.writeFields[0] in request.resource.data) || 
-            request.resource.data[request.writeFields[0]] is list
+            !(request.writeFields[0] in request.resource.data) || (request.resource.data[request.writeFields[0]] is list && request.resource.data[request.writeFields[0]].size() > 0)
           );
       }
     }
