@@ -10,7 +10,7 @@ import { auth } from 'firebase/app';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  constructor(private afAuth: AngularFireAuth) {
+  constructor(public afAuth: AngularFireAuth) {
   }
 
   // user: any;

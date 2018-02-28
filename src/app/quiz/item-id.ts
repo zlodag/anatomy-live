@@ -22,7 +22,7 @@ export class ItemId extends BehaviorSubject<string> {
 				}
 			);
 		} else if (ids instanceof Array) {
-			console.log('Getting IDs by array: ' + JSON.stringify(ids));
+			// console.log('Getting IDs by array: ' + JSON.stringify(ids));
 			this.itemIds = ids;
 			shuffle(this.itemIds);
 			this.nextItem();
