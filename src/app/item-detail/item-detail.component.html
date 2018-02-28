@@ -1,10 +1,11 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
 <app-item-detail-list
-	[title]="route.snapshot.paramMap.get('itemId')"
+	[title]="route.snapshot.data.itemName"
 	[details]="itemObservable"
 	[edit]="editState.edit | async"
 	[showQuizLink]="true"
-	(update)="update($event)"
-	(delete)="delete($event)"
+	(add)="add($event.field, $event.entry)"
+	(set)="set($event.field, $event.entryKey, $event.entry)"
+	(remove)="remove($event.field, $event.entryKey)"
 	></app-item-detail-list>

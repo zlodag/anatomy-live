@@ -15,12 +15,9 @@ export class BreadcrumbsComponent implements OnInit {
   	routerLink: string[];
   }[] = [];
 
-  // @Input() regions: boolean = false;
   @Input() quiz: boolean = false;
 
   ngOnInit() {
-  	// console.log('About to log routes');
-  	// this.route.pathFromRoot.forEach(activatedRoute => console.log(activatedRoute.toString()));
   	this.crumbs.push({
   		label: 'Home',
   		routerLink: ['/']
@@ -39,13 +36,13 @@ export class BreadcrumbsComponent implements OnInit {
     		if (this.route.snapshot.paramMap.has('regionId')) {
     			const regionId = this.route.snapshot.paramMap.get('regionId');
     			this.crumbs.push({
-    				label: regionId,
+    				label: this.route.snapshot.data.regionName,
     				routerLink: ['/', userId, 'regions', regionId]
     			});
     			if (this.route.snapshot.paramMap.has('itemId')) {
   	  			const itemId = this.route.snapshot.paramMap.get('itemId');
     				this.crumbs.push({
-  	  				label: itemId,
+              label: this.route.snapshot.data.itemName,
   	  				routerLink: ['/', userId, 'regions', regionId, itemId]
   	  			});
   	  			if (this.quiz) {

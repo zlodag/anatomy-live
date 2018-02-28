@@ -96,5 +96,8 @@ export interface QuizItem {
 
 export interface PrintField {
     key: string;
-    items: string[];
+    entries: {
+      key: string;
+      name: string;
+    }[];
 }

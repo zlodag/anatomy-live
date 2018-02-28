@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
+import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -20,7 +20,7 @@ class Profile {
 })
 export class UserListComponent implements OnInit, OnDestroy {
 
-  constructor(private readonly afs: AngularFirestore, private afAuth: AngularFireAuth) { }
+  constructor(private readonly db: AngularFireDatabase, private afAuth: AngularFireAuth) { }
 
   private sub: Subscription;
 
@@ -30,23 +30,14 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
   	this.sub = 
-      Observable.combineLatest(this.afs.collection('users', users => users.orderBy('name')).snapshotChanges(), this.afAuth.authState)
+      Observable.combineLatest(this.db.list(this.db.database.ref('users'), ref => ref.orderByValue()).snapshotChanges(), this.afAuth.authState)
       .subscribe(([snaps, user]) => {
-
-     //  });
-     //    .map(actions => actions.map<Profile>(a => ({
-     //        id: a.payload.doc.id,
-     //        name: a.payload.doc.get('name')
-     //    })))
-     
-  	  // .subscribe(
-     //    ([user, profiles]) => {
     	  	this.userId = user ? user.uid : null;
     	  	this.myProfileName = null;
     	  	this.otherProfiles = [];
           snaps.forEach(snap => {
-            const userId = snap.payload.doc.id;
-            const name = snap.payload.doc.get('name');
+            const userId = snap.key;
+            const name = snap.payload.val();
             if (this.userId === userId) {
               this.myProfileName = name;
             } else {
@@ -56,14 +47,7 @@ export class UserListComponent implements OnInit, OnDestroy {
               });
             }
           });
-    	  },
-        error => {
-          console.error('there was an error: ' + error);
-        },
-        () => {
-          console.log('completed');
-        }
-      );
+    	  });
   }
 
   ngOnDestroy() {
@@ -71,6 +55,6 @@ export class UserListComponent implements OnInit, OnDestroy {
   }
 
   setProfile(userId: string, profileName: string){
-  	this.afs.collection('users').doc(userId).set({name: profileName});
+  	this.db.database.ref('users').child(userId).set(profileName);
   }
 }

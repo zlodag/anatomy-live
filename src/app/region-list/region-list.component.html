@@ -2,11 +2,12 @@
 <app-edit-button></app-edit-button>
 <h4 class="d-inline">Regions</h4>
 <a class="badge badge-primary" routerLink="../../quiz">Quiz</a>
+<!-- <pre>{{ regions | async | json }}</pre> -->
 <ul class="list-group my-3">
 	<li *ngFor="let region of regions | async" class="list-group-item">
-	  	<a [routerLink]="region">{{region}}</a>
-	  	<app-delete-item *ngIf="editState.edit | async" (click)="deleteRegion(region)"></app-delete-item>
-	  	<a class="badge badge-primary float-right" [routerLink]="[region, 'quiz']">Quiz</a>
+	  	<a [routerLink]="region.key">{{region.name}}</a>
+	  	<app-delete-item *ngIf="editState.edit | async" (click)="deleteRegion(region.key)"></app-delete-item>
+	  	<a class="badge badge-primary float-right" [routerLink]="[region.key, 'quiz']">Quiz</a>
 	</li>
 </ul>
 <app-add-string *ngIf="editState.edit | async" label="Region" (newString)="newRegion($event)"></app-add-string>

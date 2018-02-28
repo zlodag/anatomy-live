@@ -7,7 +7,7 @@ import { QuizComponent } from './quiz/quiz.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
-import { UserNameResolver } from './resolvers.service';
+import { UserNameResolver, RegionNameResolver, ItemNameResolver } from './resolvers.service';
 
 const appRoutes: Routes = [
   {
@@ -41,6 +41,9 @@ const appRoutes: Routes = [
           },
           {
             path: ':regionId',
+            resolve: {
+              regionName: RegionNameResolver
+            },
             children: [
               {
                 path: '',
@@ -52,6 +55,9 @@ const appRoutes: Routes = [
               },
               {
                 path: ':itemId',
+                resolve: {
+                  regionName: ItemNameResolver
+                },
                 children : [
                   {
                     path: '',
@@ -80,6 +86,8 @@ const appRoutes: Routes = [
   ],
   providers: [
     UserNameResolver,
+    RegionNameResolver,
+    ItemNameResolver,
   ],
   exports: [
     RouterModule
