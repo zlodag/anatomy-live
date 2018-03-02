@@ -20,23 +20,3 @@
 		</li>
 	</ul>
 </ng-template>
-<!-- 
-<ul class="list-group my-3">
-	<li *ngFor="let region of regions | async">
-	  	<app-edit-string
-			
-			label="Region"
-			[text]="region.name"
-			(update)="update(region.key, $event)"
-			(delete)="delete(region.key)"
-			></app-edit-string>
-		<ng-template #noEdit>
-			<div class="list-group-item">
-		  		<a [routerLink]="region.key">{{region.name}}</a>
-		  		<a class="badge badge-primary float-right" [routerLink]="[region.key, 'quiz']">Quiz</a>
-		  	</div>
-		</ng-template>
-	</li>
-</ul>
-<app-add-string *ngIf="editState.edit | async" label="Region" (newString)="add($event)"></app-add-string>
- -->
