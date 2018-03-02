@@ -1,7 +1,7 @@
 <form #addForm="ngForm" (ngSubmit)="add()" class="my-3">
 	<div class="form-group">
 		<div class="input-group">
-		  <input name="value" type="text" class="form-control" [(ngModel)]="value" [placeholder]="label" required autofocus>
+		  <input name="value" type="text" class="form-control" [(ngModel)]="value" [placeholder]="'New ' + label" required autofocus>
 		  <div class="input-group-append">
 		    <button class="btn btn-outline-success" type="submit" [disabled]="!addForm.form.valid || !value.trim().length">Add</button>
 		  </div>

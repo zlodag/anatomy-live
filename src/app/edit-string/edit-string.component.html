@@ -7,15 +7,25 @@
 
  -->
 <!-- <div *ngIf="editState.edit | async; else noEdit" -->
-<div class="form">
+<form #updateForm="ngForm" (ngSubmit)="updateValue()" class="my-3">
 	<div class="form-group">
 		<div class="input-group">
-		  <input type="text" class="form-control" [(ngModel)]="newString" [placeholder]="label">
+		  <input type="text" name="value" class="form-control" [(ngModel)]="newString" [placeholder]="label" required>
 		  <div class="input-group-append">
-		    <button class="btn btn-outline-info" type="button" [disabled]="!validText()" (click)="updateValue()">Update</button>
+		    <button class="btn btn-outline-info" type="submit" [disabled]="!updateForm.form.valid || !validText()">Update</button>
 		    <button class="btn btn-outline-danger" type="button" (click)="delete.emit()">Remove</button>
 		  </div>
 		</div>
 	</div>
-</div>
+</form>
+<!-- <form #addForm="ngForm" (ngSubmit)="add()" class="my-3">
+	<div class="form-group">
+		<div class="input-group">
+		  <input type="text" name="value" class="form-control" [(ngModel)]="value" [placeholder]="label" required autofocus>
+		  <div class="input-group-append">
+		    <button class="btn btn-outline-success" type="submit" [disabled]="!addForm.form.valid || !value.trim().length">Add</button>
+		  </div>
+		</div>
+	</div>
+</form> -->
 <!-- <ng-template #noEdit>{{ text }}</ng-template> -->

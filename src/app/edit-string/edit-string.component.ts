@@ -33,7 +33,7 @@ export class EditStringComponent implements OnInit, OnChanges {
     //     this.newString = change.previousValue;
     //   }
     // }
-      const change = changes['text'];
+    const change = changes['text'];
     if (change) {
       this.newString = change.currentValue;
     }
