@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
-import { Region } from '../models';
 import * as firebase from 'firebase';
 import { EditStateService } from '../edit-state.service';
 

@@ -56,7 +56,7 @@ const appRoutes: Routes = [
               {
                 path: ':itemId',
                 resolve: {
-                  regionName: ItemNameResolver
+                  itemName: ItemNameResolver
                 },
                 children : [
                   {

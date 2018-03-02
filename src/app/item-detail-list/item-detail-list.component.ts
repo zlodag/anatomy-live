@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { Details } from '../models';
+import { Field, FieldSpec, DETAIL_FIELDS } from '../models';
 import { Observable } from 'rxjs/Observable';
-import { PrintField } from '../models';
 
 @Component({
   selector: 'app-item-detail-list',
@@ -14,7 +13,7 @@ export class ItemDetailListComponent implements OnInit {
 
   @Input() title: string;
 
-  @Input() details: Observable<PrintField[]>;
+  @Input() fields: Observable<Field[]>;
 
   @Input() edit: boolean = false;
 
@@ -22,6 +21,9 @@ export class ItemDetailListComponent implements OnInit {
 
   ngOnInit() {
   }
+
+  detailFields = DETAIL_FIELDS;
+  selectedField: string = "";
 
   @Output() add = new EventEmitter<{
     field: string;

@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
+import { AngularFireDatabase } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
-import { DETAIL_FIELDS, PrintField } from '../models';
+import { DETAIL_FIELDS, Field } from '../models';
 import { EditStateService } from '../edit-state.service';
 import 'rxjs/add/operator/map';
-import 'rxjs/add/observable/combineLatest';
 
 @Component({
   selector: 'app-item-detail',
@@ -14,20 +13,23 @@ import 'rxjs/add/observable/combineLatest';
 })
 export class ItemDetailComponent implements OnInit {
 
-  private itemRef = this.db.database.ref('details').child(this.route.snapshot.paramMap.get('userId')).child(this.route.snapshot.paramMap.get('regionId')).child(this.route.snapshot.paramMap.get('itemId'));
+  private itemRef = this.db.database.ref('details')
+    .child(this.route.snapshot.paramMap.get('userId'))
+    .child(this.route.snapshot.paramMap.get('regionId'))
+    .child(this.route.snapshot.paramMap.get('itemId'));
   
-  itemObservable: Observable<PrintField[]> = Observable.combineLatest(this.db.object(this.itemRef).snapshotChanges(), this.editState.edit).map(([action, edit]) => {
-      const fields: PrintField[] = [];
+  fields: Observable<Field[]> = this.db.object(this.itemRef).snapshotChanges().map(action => {
+      const fields: Field[] = [];
       DETAIL_FIELDS.forEach(detailField => {
-        if (action.payload.hasChild(detailField.key) || edit) {
-          const field: PrintField = {
+        if (action.payload.hasChild(detailField.key)) {
+          const field: Field = {
             key: detailField.key,
             entries: []
           };
           action.payload.child(detailField.key).forEach(snap => {
             field.entries.push({
               key: snap.key,
-              name: snap.val()
+              text: snap.val()
             });
             return false;
           });
@@ -37,35 +39,9 @@ export class ItemDetailComponent implements OnInit {
       return fields;
     });
 
-  // items = this.itemList.snapshotChanges().map(actions => actions.map(a => ({
-  //   key: a.key,
-  //   name: a.payload.val(),
-  // })));
-
-  // private itemDocument: AngularFirestoreDocument<any>;
-  // itemObservable: Observable<PrintField[]>;
-
   constructor(private readonly db: AngularFireDatabase, public route: ActivatedRoute, public editState: EditStateService) { }
 
   ngOnInit() {
-    // this.itemDocument = this.afs.collection('users').doc(this.route.snapshot.paramMap.get('userId')).collection('/details').doc(this.route.snapshot.paramMap.get('itemId'));
-    // this.itemObservable = Observable.combineLatest(this.itemDocument.valueChanges(), this.editState.edit).map(([obj, edit]) => {
-    //   const fields: PrintField[] = [];
-    //   DETAIL_FIELDS.forEach(detailField => {
-    //     if (obj && detailField.key in obj){
-    //       fields.push({
-    //         key: detailField.key,
-    //         items: obj[detailField.key]
-    //       });
-    //     } else if (edit) {
-    //       fields.push({
-    //         key: detailField.key,
-    //         items: []
-    //       });
-    //     }
-    //   });
-    //   return fields;
-    // });
   }
 
   add(field: string, entry: string) {
@@ -73,15 +49,10 @@ export class ItemDetailComponent implements OnInit {
   }
 
   set(field: string, entryKey: string, entry: string) {
-    // console.log('Updating: ' + JSON.stringify(updateObject));
     this.itemRef.child(field).child(entryKey).set(entry);
-    // this.itemDocument.set(updateObject, { merge: true });
   }
 
   remove(field: string, entryKey: string){
-    // console.log('Deleting: ' + field);
-    // this.itemDocument.delete();
     this.itemRef.child(field).child(entryKey).remove();
-    // this.itemDocument.set({[field]: firestore.FieldValue.delete()}, { merge: true });
   }
 }

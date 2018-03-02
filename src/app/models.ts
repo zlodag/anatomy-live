@@ -1,20 +1,20 @@
-import { firestore } from 'firebase';
+// import { firestore } from 'firebase';
 
-export interface Region {
-  ts: Date | firestore.FieldValue;
-}
+// export interface Region {
+//   ts: Date | firestore.FieldValue;
+// }
 
-export interface Item {
-  ts: Date | firestore.FieldValue;
-  region: string;
-}
+// export interface Item {
+//   ts: Date | firestore.FieldValue;
+//   region: string;
+// }
 
-export interface DetailField {
+export interface FieldSpec {
     key: string;
     shortcut: string;
 }
 
-export const DETAIL_FIELDS: DetailField[] = [
+export const DETAIL_FIELDS: FieldSpec[] = [
   {key: 'Introduction', shortcut: 'in'},
   {key: 'Structure', shortcut: 'st'},
 
@@ -45,59 +45,102 @@ export const DETAIL_FIELDS: DetailField[] = [
   {key: 'Variants', shortcut: 'va'},
 ];
 
-export interface Details {
-
-    'Introduction'?: string[];
-    'Structure'?: string[];
-
-    'Superior relations'?: string[];
-    'Inferior relations'?: string[];
-    'Anterior relations'?: string[];
-    'Posterior relations'?: string[];
-    'Medial relations'?: string[];
-    'Lateral relations'?: string[];
-
-    'Superior boundary'?: string[];
-    'Inferior boundary'?: string[];
-    'Anterior boundary'?: string[];
-    'Posterior boundary'?: string[];
-    'Medial boundary'?: string[];
-    'Lateral boundary'?: string[];
-
-    'Contents'?: string[];
-    'Articulations'?: string[];
-    'Attachments'?: string[];
-    'Special structures'?: string[];
-
-    'Nerve supply'?: string[];
-    'Arterial supply'?: string[];
-    'Venous drainage'?: string[];
-    'Lymphatic drainage'?: string[];
-
-    'Variants'?: string[];
-
+export interface Entry {
+  key: string;
+  text: string;
 }
 
-export interface QuizDetail {
-    text: string;
-    done: boolean;
+export interface Field {
+  key: string;
+  entries: Entry[];
 }
 
-export interface QuizDetails {
-    [key: string]: QuizDetail[];
-}
+// export interface Details {
 
-export interface QuizItem {
-    id: string;
-    details: QuizDetails;
-    total: number;
-    remainder: number;
-}
+//     'Introduction'?: Entry[];
+//     'Structure'?: Entry[];
 
-export interface PrintField {
-    key: string;
-    entries: {
-      key: string;
-      name: string;
-    }[];
-}
+//     'Superior relations'?: Entry[];
+//     'Inferior relations'?: Entry[];
+//     'Anterior relations'?: Entry[];
+//     'Posterior relations'?: Entry[];
+//     'Medial relations'?: Entry[];
+//     'Lateral relations'?: Entry[];
+
+//     'Superior boundary'?: Entry[];
+//     'Inferior boundary'?: Entry[];
+//     'Anterior boundary'?: Entry[];
+//     'Posterior boundary'?: Entry[];
+//     'Medial boundary'?: Entry[];
+//     'Lateral boundary'?: Entry[];
+
+//     'Contents'?: Entry[];
+//     'Articulations'?: Entry[];
+//     'Attachments'?: Entry[];
+//     'Special structures'?: Entry[];
+
+//     'Nerve supply'?: Entry[];
+//     'Arterial supply'?: Entry[];
+//     'Venous drainage'?: Entry[];
+//     'Lymphatic drainage'?: Entry[];
+
+//     'Variants'?: Entry[];
+
+// }
+
+// export interface Details {
+
+//     'Introduction'?: Entry[];
+//     'Structure'?: Entry[];
+
+//     'Superior relations'?: Entry[];
+//     'Inferior relations'?: Entry[];
+//     'Anterior relations'?: Entry[];
+//     'Posterior relations'?: Entry[];
+//     'Medial relations'?: Entry[];
+//     'Lateral relations'?: Entry[];
+
+//     'Superior boundary'?: Entry[];
+//     'Inferior boundary'?: Entry[];
+//     'Anterior boundary'?: Entry[];
+//     'Posterior boundary'?: Entry[];
+//     'Medial boundary'?: Entry[];
+//     'Lateral boundary'?: Entry[];
+
+//     'Contents'?: Entry[];
+//     'Articulations'?: Entry[];
+//     'Attachments'?: Entry[];
+//     'Special structures'?: Entry[];
+
+//     'Nerve supply'?: Entry[];
+//     'Arterial supply'?: Entry[];
+//     'Venous drainage'?: Entry[];
+//     'Lymphatic drainage'?: Entry[];
+
+//     'Variants'?: Entry[];
+
+// }
+
+// export interface QuizDetail {
+//     text: string;
+//     done: boolean;
+// }
+
+// export interface QuizDetails {
+//     [key: string]: QuizDetail[];
+// }
+
+// export interface QuizItem {
+//     id: string;
+//     details: QuizDetails;
+//     total: number;
+//     remainder: number;
+// }
+
+// export interface PrintField {
+//     key: string;
+//     entries: {
+//       key: string;
+//       name: string;
+//     }[];
+// }

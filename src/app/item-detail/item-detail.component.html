@@ -2,7 +2,7 @@
 <app-edit-button></app-edit-button>
 <app-item-detail-list
 	[title]="route.snapshot.data.itemName"
-	[details]="itemObservable"
+	[fields]="fields"
 	[edit]="editState.edit | async"
 	[showQuizLink]="true"
 	(add)="add($event.field, $event.entry)"
