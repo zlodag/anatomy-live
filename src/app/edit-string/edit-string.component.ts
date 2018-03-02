@@ -1,31 +1,51 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+// import { EditStateService } from '../edit-state.service';
 
 @Component({
   selector: 'app-edit-string',
   templateUrl: './edit-string.component.html',
   styleUrls: ['./edit-string.component.css']
 })
-export class EditStringComponent implements OnInit {
+export class EditStringComponent implements OnInit, OnChanges {
 
-  constructor() { }
+  constructor(
+    // public editState: EditStateService
+    ) { }
 
   @Input() label: string;
-  @Input() value: string;
-  @Input() canDelete: boolean;
+  @Input() text: string;
 
-  @Output() newString = new EventEmitter<string>();
+  newString: string;
+
+  @Output() update = new EventEmitter<string>();
   @Output() delete = new EventEmitter<void>();
 
   ngOnInit() {
   }
 
-  edit() {
-    let s = prompt(`Edit ${this.label}`, this.value);
-    if (s) {
-      s = s.trim();
-      if (s) {
-        this.newString.emit(s);
-      }
+  ngOnChanges(changes: SimpleChanges) {
+    // for (let propName in changes) {
+    //   let chng = changes[propName];
+    //   let cur  = JSON.stringify(chng.currentValue);
+    //   let prev = JSON.stringify(chng.previousValue);
+    //   console.log(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+    //   if (propName == 'text') {
+    //     this.newString = change.previousValue;
+    //   }
+    // }
+      const change = changes['text'];
+    if (change) {
+      this.newString = change.currentValue;
+    }
+  }
+
+  validText() {
+    return this.newString && this.newString.trim().length > 0 && this.newString.trim() != this.text;
+  }
+
+  updateValue() {
+    if (this.validText()) {
+      this.update.emit(this.newString.trim());
     }
   }
 

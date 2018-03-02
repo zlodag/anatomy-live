@@ -13,6 +13,8 @@ import 'rxjs/add/operator/map';
 })
 export class ItemDetailComponent implements OnInit {
 
+  constructor(private readonly db: AngularFireDatabase, public route: ActivatedRoute, public editState: EditStateService) { }
+
   private itemRef = this.db.database.ref('details')
     .child(this.route.snapshot.paramMap.get('userId'))
     .child(this.route.snapshot.paramMap.get('regionId'))
@@ -38,8 +40,6 @@ export class ItemDetailComponent implements OnInit {
       });
       return fields;
     });
-
-  constructor(private readonly db: AngularFireDatabase, public route: ActivatedRoute, public editState: EditStateService) { }
 
   ngOnInit() {
   }

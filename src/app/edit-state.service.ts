@@ -3,43 +3,40 @@ import { AngularFireAuth } from 'angularfire2/auth';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
 import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/combineLatest';
 
 @Injectable()
-export class EditStateService
- implements OnDestroy 
- {
+export class EditStateService implements OnDestroy {
 
-  constructor(
-    auth: AngularFireAuth,
-    route: ActivatedRoute
-    ) {
-    const ownerId = route.snapshot.paramMap.get('userId');
-  	this.subscription = auth.authState.subscribe(user => {
-      this._mine = (user && user.uid === ownerId);
-      if (this.edit.getValue() && !this._mine) {
-        this.edit.next(false);
+  constructor(auth: AngularFireAuth, route: ActivatedRoute) {
+  	this.subscription = Observable.combineLatest(auth.authState, route.paramMap).subscribe(([user, params])  => {
+      const ownerId = params.get('userId');
+      this._enabled = user && (!ownerId || user.uid == ownerId);
+      if (this._edit.getValue() && !this._enabled) {
+        this._edit.next(false);
       }
     });
   }
-  private _mine: boolean = false;
-  public edit: BehaviorSubject<boolean> = new BehaviorSubject(false);
+
+  private _enabled: boolean = false;
+
+  private _edit: BehaviorSubject<boolean> = new BehaviorSubject(false);
+
+  public edit = this._edit.asObservable();
+
   public toggle(){
-    if (this.edit.getValue()) {
-      this.edit.next(false);
-    } else if (this._mine) {
-      this.edit.next(true);
+    if (this._edit.getValue()) {
+      this._edit.next(false);
+    } else if (this._enabled) {
+      this._edit.next(true);
     }
   }
-  // public set edit(v : boolean) {
-  // 	this._edit = v && this._authed;
-  // }
-  public get mine() : boolean {
-  	return this._mine;
+
+  public get enabled() : boolean {
+  	return this._enabled;
   }
-  // private _authed: boolean = false;
-  // public get authed() : boolean {
-  // 	return this._authed;
-  // }
+
   private subscription: Subscription;
 
   ngOnDestroy() {

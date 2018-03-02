@@ -17,8 +17,8 @@ import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
-import { UserComponent } from './user/user.component';
 import { DeleteItemComponent } from './delete-item/delete-item.component';
+import { EditStateService } from './edit-state.service';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCNC0Rl6WPNd1qzTpyVchkyImJc1Fy4T54',
@@ -51,10 +51,10 @@ const firebaseConfig = {
     UserListComponent,
     EditStringComponent,
     ItemDetailListComponent,
-    UserComponent,
     DeleteItemComponent,
   ],
   providers: [
+    EditStateService
   ],
   bootstrap: [AppComponent]
 })
