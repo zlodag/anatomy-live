@@ -10,7 +10,7 @@ import { EditStateService } from '../edit-state.service';
 })
 export class ItemListComponent implements OnDestroy {
 
-  private itemList = this.db.list(this.db.database.ref('items').child(this.route.snapshot.paramMap.get('userId')).child(this.route.snapshot.paramMap.get('regionId')), ref => ref.orderByKey());
+  private itemList = this.db.list(this.db.database.ref('items').child(this.route.snapshot.paramMap.get('userId')).child(this.route.snapshot.paramMap.get('regionId')), ref => ref.orderByValue());
   public items = [];
   private sub = this.itemList.snapshotChanges().map(actions => actions.map(a => ({
     key: a.key,

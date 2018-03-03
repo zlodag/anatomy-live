@@ -11,7 +11,7 @@ import { EditStateService } from '../edit-state.service';
 })
 export class RegionListComponent implements OnDestroy {
 
-  private regionList = this.db.list(this.db.database.ref('regions').child(this.route.snapshot.paramMap.get('userId')), ref => ref.orderByKey());
+  private regionList = this.db.list(this.db.database.ref('regions').child(this.route.snapshot.paramMap.get('userId')), ref => ref.orderByValue());
   public regions = [];
   private sub = this.regionList.snapshotChanges().map(actions => actions.map(a => ({
     key: a.key,

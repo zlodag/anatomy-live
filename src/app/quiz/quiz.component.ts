@@ -1,5 +1,4 @@
-import { NgModule, Component, OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, ElementRef, SecurityContext } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { NgModule, Component, AfterViewInit, AfterViewChecked, OnDestroy, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
@@ -14,18 +13,28 @@ import { database } from 'firebase';
 import { Field, DETAIL_FIELDS, EntryProgress, Progress } from '../models';
 import { IdSubject, ItemSubject, RegionSubject, AllRegionsSubject } from './item-id';
 
+interface Segment {
+    classes: string[];
+    text: string;
+}
+
 @Component({
     selector: 'app-quiz',
 	templateUrl: './quiz.component.html',
 	styleUrls: ['./quiz.component.css'],
 })
-export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
+export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
 
-    constructor(private route: ActivatedRoute, private readonly db: AngularFireDatabase, public el: ElementRef, private sanitizer: DomSanitizer) {
+    constructor(private route: ActivatedRoute, private readonly db: AngularFireDatabase, public el: ElementRef) {
     }
 
     command: string;
-    lines: string[] = [];
+    lines: Segment[][] = [[
+        {classes: ['text-primary'], text: 'Anatomy Quiz!'},
+        {classes: [], text: ' (Enter '},
+        {classes: ['font-weight-bold'], text: 'help'},
+        {classes: [], text: ' for help)'},
+    ]];
     private scrollToBottom: boolean;
     private terminal: Element;
     private input = new Subject<string>();
@@ -43,11 +52,14 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
     private progressSubscription = this.item
         .do(
             item => {
-                this.log(`New item: ${item.itemName}`);
+                this.log(
+                    {classes: [], text: 'New item: '},
+                    {classes: ['font-weight-bold'], text: item.itemName},
+                );
             },
             error => {},
             () => {
-                this.log('Finished!');
+                this.log({classes: ['text-success'], text: 'Finished! 🎉'});
                 this.commandSubscription.unsubscribe();
             }
         )
@@ -74,17 +86,13 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
 
     private commandSubscription = this.input.withLatestFrom(this.progress.do(progress => {
         if (!getFields(progress, false).length) {
-            this.log(`Item complete`);
+            this.log({classes: [], text: 'Item complete'});
             this.item.nextItem();
         }
     })).subscribe(([input, progress]) => {
         if (input.toLowerCase() == 'cheat') {
-            getFields(progress, false).forEach(field => {
-                this.log(`${field.key} (${field.entries.length})`);
-                field.entries.forEach(entry => {
-                    this.log(`- ${entry.text}`);
-                });
-            });
+            this.logTitle('Cheat');
+            getFields(progress, false).forEach(field => this.cheat(field));
             return;
         }
         let match = input.match(/^cheat ([a-z]{2})$/i);
@@ -93,22 +101,19 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
             for (let i = 0; i < DETAIL_FIELDS.length; i++) {
                 const detailField = DETAIL_FIELDS[i];
                 if (shortcut == detailField.shortcut) {
-                    const field: Field = {
+                    this.logTitle('Cheat');
+                    this.cheat({
                         key: detailField.key,
                         entries: detailField.key in progress ? 
                             progress[detailField.key].filter(entry => !entry.done).map(entry => ({
                                 key: entry.key,
                                 text: entry.text,
                             })) : []
-                    };
-                    this.log(`${field.key} (${field.entries.length})`);
-                    field.entries.forEach(entry => {
-                        this.log(`- ${entry.text}`);
                     });
                     return;
                 }
             }
-            this.log(`Invalid key: "${shortcut}". Try "keys"`);
+            this.invalidKey(shortcut);
             return;
         }
         match = input.match(/^([a-z]{2})\s+(.+)$/i);
@@ -144,14 +149,41 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
                     return;
                 }
             }
-            this.log(`Invalid key: "${shortcut}". Try "keys"`);
+            this.invalidKey(shortcut);
             return;
         }
-        this.log(`Invalid command: "${input}". Try "help"`);
+        this.invalidCommand(input);
     });
 
-    ngOnInit() {
+    logTitle(title: string) {
+        this.log({classes: ['text-primary'], text: title});
     }
+    cheat(field: Field) {
+        this.log(
+            {classes: ['font-weight-bold'], text: field.key},
+            {classes: [], text: ` (${field.entries.length})`},
+        );
+        field.entries.forEach(entry => this.log({classes: [], text: `- ${entry.text}`}));
+    }
+
+    invalidCommand(invalidCommand: string) {
+        this.log(
+            {classes: [], text: 'Invalid command '},
+            {classes: ['text-white bg-dark'], text: invalidCommand},
+            {classes: [], text: ' - try '},
+            {classes: ['font-weight-bold'], text: 'help'},
+        );
+    }
+
+    invalidKey(invalidKey: string) {
+        this.log(
+            {classes: [], text: 'Invalid key '},
+            {classes: ['font-weight-bold'], text: invalidKey},
+            {classes: [], text: ' - try '},
+            {classes: ['font-weight-bold'], text: 'keys'},
+        );
+    }
+
     ngAfterViewInit() {
         this.terminal = this.el.nativeElement.querySelector('#terminal');
     }
@@ -172,7 +204,7 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
     handleCommand(currentItemName: string, event: KeyboardEvent) {
         if (event.keyCode == 13) {
             this.command = this.command ? this.command.trim() : '';
-            this.log(`${currentItemName} > ${this.command}`);
+            this.log({classes: [], text: `${currentItemName} > ${this.command}`});
             if (this.command.length) {
                 switch (this.command) {
                     case 'help':
@@ -182,7 +214,10 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
                         this.printKeys();
                         break;
                     case 'skip':
-                        this.log(`Skipping ${currentItemName}`);
+                        this.log(
+                            {classes: [], text: 'Skipping '},
+                            {classes: ['font-weight-bold'], text: currentItemName},
+                        );
                         this.item.nextItem();
                         break;
                     default:
@@ -193,12 +228,16 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
             this.command = '';
         }
     }
-    private log(text: string | SafeHtml) {
-        this.lines.push(this.sanitizer.sanitize(SecurityContext.HTML, text));
+    private log(...segments: Segment[]) {
+        this.lines.push(segments);
         this.scrollToBottom = true;
     }
+
     focusOnInput() {
-        (<HTMLElement>this.terminal.querySelector("#command_prompt")).focus();
+        const input = (<HTMLElement>this.terminal.querySelector("#command_prompt"));
+        if (input) {
+            input.focus();
+        }
     }
 
     private tokenMatches(token: string, label: string, answer: string) {
@@ -211,36 +250,22 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
     }
 
     private informCorrect(answer: string, indexStart: number, indexEnd: number, label: string) {
-        this.log(this.sanitizer.bypassSecurityTrustHtml(
-            this.sanitize(`✔ ${label}: ${answer.slice(0, indexStart)}`) +
-            '<span class="bg-success text-white">' + 
-            // '<span class="text-success font-weight-bold">' + 
-            this.sanitize(answer.slice(indexStart, indexEnd)) +
-            '</span>' +
-            this.sanitize(answer.slice(indexEnd, answer.length))
-        ));
-    }
-
-    private sanitize(text: string): string {
-        return escape(text);
-        // return this.sanitizer.sanitize(SecurityContext.HTML, text);
+        this.log(
+            {classes: [], text: `✔ ${label}: ${answer.slice(0, indexStart)}`},
+            {classes: ['bg-success', 'text-white'], text: answer.slice(indexStart, indexEnd)},
+            {classes: [], text: answer.slice(indexEnd, answer.length)},
+        );
     }
 
     private informIncorrect(token: string, label: string) {
-        this.log(this.sanitizer.bypassSecurityTrustHtml(
-            this.sanitize(`✘ ${label}: `) +
-            // '<span class="text-danger font-weight-bold">' + 
-            '<span class="bg-danger text-white">' + 
-            this.sanitize(token) +
-            '</span>'
-        ));
-
-        
+        this.log(
+            {classes: [], text: `✘ ${label}: `},
+            {classes: ['bg-danger', 'text-white'], text: token},
+        );
     }
 
     private printHelp() {
-        this.log(this.sanitizer.bypassSecurityTrustHtml('<u>Help</u>'));
-        const helpKeys: {key: string, text: string}[] = 
+        this.logTitle('Help');
         [
             {key: '<key> <guess>[,<guess>...]', text: 'Attempt answer(s) to current item for the specified key'},
             {key: 'skip', text: 'Skip current item'},
@@ -248,37 +273,21 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
             {key: 'cheat <key>', text: 'Display answer(s) to current item for the specified key'},
             {key: 'keys', text: 'Display a list of keys'},
             {key: 'help', text: 'Display this message'},
-        ];
-        helpKeys.forEach(line => {
-            console.log(this.sanitize(line.key));
-            this.log(this.sanitizer.bypassSecurityTrustHtml(
-                '<span class="font-weight-bold">' +
-                this.sanitize(line.key) +
-                '</span>'
-            ));
-            this.log(this.sanitizer.bypassSecurityTrustHtml(
-                '<span class="ml-3">' +
-                this.sanitize(line.text) +
-                '</span>'
-            ));
+        ].forEach(line => {
+            this.log(
+                {classes: ['font-weight-bold'], text: line.key},
+                {classes: [], text: ' - ' + line.text},
+            );
         });
     }
 
     private printKeys() {
-        this.log(this.sanitizer.bypassSecurityTrustHtml('<u>Keys</u>'));
+        this.logTitle('Keys');
         DETAIL_FIELDS.forEach(detailField => {
-            this.log(this.sanitizer.bypassSecurityTrustHtml(
-                '<span class="font-weight-bold">' +
-                this.sanitize(detailField.shortcut) +
-                '</span>: ' +
-                // +
-            // ));
-            // this.log(this.sanitizer.bypassSecurityTrustHtml(
-                // '<span>' +
-                this.sanitize(detailField.key)
-                 // +
-                // '</span>'
-            ));
+            this.log(
+                {classes: ['font-weight-bold'], text: detailField.shortcut},
+                {classes: [], text: ' - ' + detailField.key},
+            );
         });
     }
 
