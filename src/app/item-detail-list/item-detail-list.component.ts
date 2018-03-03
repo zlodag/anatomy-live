@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { Field, FieldSpec, DETAIL_FIELDS } from '../models';
+import { Field, DETAIL_FIELDS } from '../models';
 import { Observable } from 'rxjs/Observable';
 
 @Component({

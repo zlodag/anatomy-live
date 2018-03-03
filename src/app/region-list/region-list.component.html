@@ -1,7 +1,7 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
 <h4 class="d-inline">Regions</h4>
-<a class="badge badge-primary" routerLink="../../quiz">Quiz</a>
+<a class="badge badge-primary align-text-top" routerLink="../../quiz">Quiz</a>
 <div *ngIf="editState.edit | async; else noEdit">
 	<app-edit-string
 		*ngFor="let region of regions"

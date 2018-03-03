@@ -1,5 +1,5 @@
 <h4 class="d-inline">{{ title }}</h4>
-<a  *ngIf="showQuizLink" class="badge badge-primary" routerLink="quiz">Quiz</a>
+<a  *ngIf="showQuizLink" class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
 <ul class="list-group my-3">
     <li *ngFor="let field of fields | async" class="list-group-item">
         <h5>{{ field.key }}</h5>

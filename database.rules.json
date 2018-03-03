@@ -3,13 +3,13 @@
     "users": {
       ".read" : "true",
       "$uid": {
-        ".write": "auth != null && auth.uid == $uid && newData.exists()",
+        ".write": "auth != null && auth.uid == $uid && (newData.exists() || !root.child('regions').child($uid).exists())",
         ".validate": "newData.isString() && newData.val().length != 0"
       }
     },
     "regions" : {
-    	"$uid": {
-      	".read" : "true",
+      "$uid": {
+        ".read" : "true",
         "$regionId": {
           ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).exists() && (newData.exists() || !root.child('items').child($uid).child($regionId).exists())",
           ".validate": "newData.isString() && newData.val().length != 0"
@@ -17,21 +17,21 @@
       }
     },
     "items" : {
-    	"$uid": {
-      	".read" : "true",
+      "$uid": {
+        ".read" : "true",
         "$regionId": {
           "$itemId": {
-          	".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || !root.child('details').child($uid).child($regionId).child($itemId).exists())",
+            ".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || !root.child('details').child($uid).child($regionId).child($itemId).exists())",
             ".validate": "newData.isString() && newData.val().length != 0"
           }
         }
       }
     },
     "details" : {
-    	"$uid": {
+      "$uid": {
         "$regionId": {
           "$itemId": {
-      			".read" : "true",
+            ".read" : "true",
             "$field" : {
               "$entry" : {
                 ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists() && ($field == 'Introduction' || $field == 'Structure' || $field == 'Superior relations' || $field == 'Inferior relations' || $field == 'Anterior relations' || $field == 'Posterior relations' || $field == 'Medial relations' || $field == 'Lateral relations' || $field == 'Superior boundary' || $field == 'Inferior boundary' || $field == 'Anterior boundary' || $field == 'Posterior boundary' || $field == 'Medial boundary' || $field == 'Lateral boundary' || $field == 'Contents' || $field == 'Articulations' || $field == 'Attachments' || $field == 'Special structures' || $field == 'Nerve supply' || $field == 'Arterial supply' || $field == 'Venous drainage' || $field == 'Lymphatic drainage' || $field == 'Variants')",

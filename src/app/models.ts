@@ -1,15 +1,4 @@
-// import { firestore } from 'firebase';
-
-// export interface Region {
-//   ts: Date | firestore.FieldValue;
-// }
-
-// export interface Item {
-//   ts: Date | firestore.FieldValue;
-//   region: string;
-// }
-
-export interface FieldSpec {
+interface FieldSpec {
     key: string;
     shortcut: string;
 }
@@ -45,7 +34,7 @@ export const DETAIL_FIELDS: FieldSpec[] = [
   {key: 'Variants', shortcut: 'va'},
 ];
 
-export interface Entry {
+interface Entry {
   key: string;
   text: string;
 }
@@ -64,92 +53,3 @@ export interface EntryProgress {
 export interface Progress {
   [key: string]: EntryProgress[];
 }
-// export interface Details {
-
-//     'Introduction'?: Entry[];
-//     'Structure'?: Entry[];
-
-//     'Superior relations'?: Entry[];
-//     'Inferior relations'?: Entry[];
-//     'Anterior relations'?: Entry[];
-//     'Posterior relations'?: Entry[];
-//     'Medial relations'?: Entry[];
-//     'Lateral relations'?: Entry[];
-
-//     'Superior boundary'?: Entry[];
-//     'Inferior boundary'?: Entry[];
-//     'Anterior boundary'?: Entry[];
-//     'Posterior boundary'?: Entry[];
-//     'Medial boundary'?: Entry[];
-//     'Lateral boundary'?: Entry[];
-
-//     'Contents'?: Entry[];
-//     'Articulations'?: Entry[];
-//     'Attachments'?: Entry[];
-//     'Special structures'?: Entry[];
-
-//     'Nerve supply'?: Entry[];
-//     'Arterial supply'?: Entry[];
-//     'Venous drainage'?: Entry[];
-//     'Lymphatic drainage'?: Entry[];
-
-//     'Variants'?: Entry[];
-
-// }
-
-// export interface Details {
-
-//     'Introduction'?: Entry[];
-//     'Structure'?: Entry[];
-
-//     'Superior relations'?: Entry[];
-//     'Inferior relations'?: Entry[];
-//     'Anterior relations'?: Entry[];
-//     'Posterior relations'?: Entry[];
-//     'Medial relations'?: Entry[];
-//     'Lateral relations'?: Entry[];
-
-//     'Superior boundary'?: Entry[];
-//     'Inferior boundary'?: Entry[];
-//     'Anterior boundary'?: Entry[];
-//     'Posterior boundary'?: Entry[];
-//     'Medial boundary'?: Entry[];
-//     'Lateral boundary'?: Entry[];
-
-//     'Contents'?: Entry[];
-//     'Articulations'?: Entry[];
-//     'Attachments'?: Entry[];
-//     'Special structures'?: Entry[];
-
-//     'Nerve supply'?: Entry[];
-//     'Arterial supply'?: Entry[];
-//     'Venous drainage'?: Entry[];
-//     'Lymphatic drainage'?: Entry[];
-
-//     'Variants'?: Entry[];
-
-// }
-
-// export interface QuizDetail {
-//     text: string;
-//     done: boolean;
-// }
-
-// export interface QuizDetails {
-//     [key: string]: QuizDetail[];
-// }
-
-// export interface QuizItem {
-//     id: string;
-//     details: QuizDetails;
-//     total: number;
-//     remainder: number;
-// }
-
-// export interface PrintField {
-//     key: string;
-//     entries: {
-//       key: string;
-//       name: string;
-//     }[];
-// }
