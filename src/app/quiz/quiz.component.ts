@@ -74,8 +74,69 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
         })
         .subscribe(progress => this.progress.next(progress));
 
-    commandSubscription = this.input.withLatestFrom(this.progress).subscribe(([input, progress]) => {
-        console.log('New command: ' + input, progress);
+    commandSubscription = this.input.withLatestFrom(this.progress.do(progress => {
+        if (!getFields(progress, false).length) {
+            this.item.nextItem();
+        }
+    })).subscribe(([input, progress]) => {
+        if (input == 'cheat') {
+            getFields(progress, false).forEach(field => {
+                this.log(`${field.key} (${field.entries.length})`);
+                field.entries.forEach(entry => {
+                    this.log(`- ${entry.text}`);
+                });
+            });
+            return;
+        }
+        const match = input.match(/^([A-Za-z]{2})\s+(.+)$/);
+        if (match) {
+            const shortcut = match[1].toLowerCase();
+            for (let i = 0; i < DETAIL_FIELDS.length; i++) {
+                const detailField = DETAIL_FIELDS[i];
+                if (shortcut == detailField.shortcut) {
+                    const tokens = match[2].split(',');
+                    let changed = false;
+                    // const initialRemainder = quizItem.remainder;
+                    for (let j = 0; j < tokens.length; j++) {
+                        const token = tokens[j].trim();
+                        if (token.length) {
+                            let found = false;
+                            if (detailField.key in progress) {
+                                const field = progress[detailField.key];
+                                // .forEach(entry => {
+                                //     entry.
+                                // });
+                                for (let k = 0; k < field.length; k++) {
+                                    const entry = field[k];
+                                    if (!entry.done && this.tokenMatches(token, detailField.key, entry.text)) {
+                                        changed = found = entry.done = true;
+                                        // quizItem.remainder--;
+                                        // if (quizItem.remainder == 0) {
+                                        //     this.log(`Completed "${quizItem.id}"`);
+                                        //     this.itemIdObservable.nextItem();
+                                        //     this.progress.next([]);
+                                        //     return;
+                                        // }
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!found) {
+                                this.informIncorrect(token, detailField.key);
+                            }
+                        }
+                    }
+                    if (changed) {
+                        this.progress.next(progress);
+                        
+                    }
+                    return;
+                }
+            }
+            this.log(`Invalid key: "${shortcut}". Try "keys"`);
+            return;
+        }
+        this.log(`Invalid command: "${input}". Try "help"`);
     });
 
     fields: Observable<Field[]> = this.progress
@@ -134,6 +195,23 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
     }
     focus(element: HTMLElement) {
         element.focus();
+    }
+
+    private tokenMatches(token: string, label: string, answer: string) {
+        const indexStart = answer.toLowerCase().indexOf(token.toLowerCase());
+        if (indexStart != -1) {
+            this.informCorrect(answer, indexStart, indexStart + token.length, label);
+            return true;
+        }
+        return false;
+    }
+
+    private informCorrect(answer: string, indexStart: number, indexEnd: number, label: string) {
+        this.log(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
+    }
+
+    private informIncorrect(token: string, label: string) {
+        this.log(`✘ ${label}: ${token}`);
     }
 
     private printHelp() {
@@ -225,45 +303,7 @@ function itemRef(db: AngularFireDatabase, user: string, regionKey: string, itemK
         //             this.log(`Invalid command: "${command}". Try "help"`);
         //             return;
         //         }
-        //         const shortcut = match[1].toLowerCase();
-        //         for (let i = 0; i < DETAIL_FIELDS.length; i++) {
-        //             const detailField = DETAIL_FIELDS[i];
-        //             if (shortcut == detailField.shortcut) {
-        //                 const tokens = match[2].split(',');
-        //                 const initialRemainder = quizItem.remainder;
-        //                 for (let j = 0; j < tokens.length; j++) {
-        //                     const token = tokens[j].trim();
-        //                     if (token.length) {
-        //                         let found = false;
-        //                         if (detailField.key in quizItem.details) {
-        //                             const subItems = quizItem.details[detailField.key];
-        //                             for (let k = 0; k < subItems.length; k++) {
-        //                                 const subItem = subItems[k];
-        //                                 if (!subItem.done && this.tokenMatches(token, detailField.key, subItem.text)) {
-        //                                     found = subItem.done = true;
-        //                                     quizItem.remainder--;
-        //                                     if (quizItem.remainder == 0) {
-        //                                         this.log(`Completed "${quizItem.id}"`);
-        //                                         this.itemIdObservable.nextItem();
-        //                                         this.progress.next([]);
-        //                                         return;
-        //                                     }
-        //                                     break;
-        //                                 }
-        //                             }
-        //                         }
-        //                         if (!found) {
-        //                             this.informIncorrect(token, detailField.key);
-        //                         }
-        //                     }
-        //                 }
-        //                 if (initialRemainder != quizItem.remainder) {
-        //                     this.progress.next(getProgress(quizItem, true));
-        //                 }
-        //                 return;
-        //             }
-        //         }
-        //         this.log(`Invalid key: "${shortcut}". Try "keys"`);
+        //         
         //     });
     // }
 
@@ -320,22 +360,6 @@ function itemRef(db: AngularFireDatabase, user: string, regionKey: string, itemK
 
 
 
-    // private tokenMatches(token, label, answer) {
-    //     const indexStart = answer.toLowerCase().indexOf(token.toLowerCase());
-    //     if (indexStart != -1) {
-    //         this.informCorrect(answer, indexStart, indexStart + token.length, label);
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    // private informCorrect(answer, indexStart, indexEnd, label) {
-    //     this.log(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
-    // }
-
-    // private informIncorrect(token, label) {
-    //     this.log(`✘ ${label}: ${token}`);
-    // }
 
 
 
