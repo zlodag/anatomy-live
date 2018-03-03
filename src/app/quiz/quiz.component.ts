@@ -1,40 +1,190 @@
-import { NgModule, Component, OnInit, AfterViewInit, AfterViewChecked, OnDestroy, ElementRef } from '@angular/core';
+import { NgModule, Component, OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs/Subject';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import { ConnectableObservable } from 'rxjs/observable/ConnectableObservable';
 import { Subscription }   from 'rxjs/Subscription';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/withLatestFrom';
+import 'rxjs/add/operator/first';
+import 'rxjs/add/operator/publish';
 import 'rxjs/add/observable/fromPromise';
 
-import { AngularFirestore } from 'angularfire2/firestore';
-import { firestore } from 'firebase';
-import { DETAIL_FIELDS } from '../models';
-import { ItemId } from './item-id';
+import { AngularFireDatabase } from 'angularfire2/database';
+import { database } from 'firebase';
+import { Field, FieldSpec, DETAIL_FIELDS, EntryProgress, Progress } from '../models';
+import { IdSubject, ItemSubject } from './item-id';
 
 @Component({
     selector: 'app-quiz',
 	templateUrl: './quiz.component.html',
 	styleUrls: ['./quiz.component.css'],
 })
-export class QuizComponent {}
+export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
+
+    constructor(private route: ActivatedRoute, private readonly db: AngularFireDatabase, public el: ElementRef) {
+    }
+
+    command: string;
+    lines: string[] = [];
+    scrollToBottom: boolean;
+    terminal: Element;
+    private input = new Subject<string>();
+
+    userId = this.route.snapshot.paramMap.get('userId');
+    userRef = this.db.database.ref('details').child(this.userId);
+    item: IdSubject = new ItemSubject(this.db,
+        this.userId,
+        this.route.snapshot.paramMap.get('regionId'),
+        this.route.snapshot.paramMap.get('itemId')
+    );
+    progress: Subject<Progress> = new Subject();
+    progressSubscription = this.item
+        .do(
+            item => {},
+            error => {},
+            () => {
+                this.log('Finished!');
+                this.commandSubscription.unsubscribe();
+                // this.progressSubscription.unsubscribe();
+            }
+        )
+        .switchMap(item => this.userRef.child(item.regionKey).child(item.itemKey).once('value'))
+        .map((detailsSnap: database.DataSnapshot) => {
+            const progress: Progress = {};
+            detailsSnap.forEach(fieldSnap => {
+                const entries: EntryProgress[] = [];
+                fieldSnap.forEach(entrySnap => {
+                    entries.push({
+                        key: entrySnap.key,
+                        text: entrySnap.val(),
+                        done: false
+                    });
+                    return false;
+                });
+                progress[fieldSnap.key] = entries;
+                return false;
+            });
+            return progress;
+        })
+        .subscribe(progress => this.progress.next(progress));
+
+    commandSubscription = this.input.withLatestFrom(this.progress).subscribe(([input, progress]) => {
+        console.log('New command: ' + input, progress);
+    });
+
+    fields: Observable<Field[]> = this.progress
+        .map(progress => getFields(progress, true));
+
+    ngOnInit() {
+    }
+    ngAfterViewInit() {
+        this.terminal = this.el.nativeElement.querySelector('#terminal');
+        // this.terminal.querySelector('input').focus();
+    }
+    ngAfterViewChecked() {
+        if (this.scrollToBottom) {
+            this.terminal.scrollTop = this.terminal.scrollHeight;
+            this.scrollToBottom = false;
+        }
+    }
+    ngOnDestroy() {
+        if (this.progressSubscription) {
+            this.progressSubscription.unsubscribe();
+        }
+        if (this.commandSubscription) {
+            this.commandSubscription.unsubscribe();
+        }
+    }
+    handleCommand(currentItemName: string, event: KeyboardEvent) {
+        if (event.keyCode == 13) {
+            this.command = this.command ? this.command.trim() : '';
+            this.log(`${currentItemName} > ${this.command}`);
+            if (this.command.length) {
+                switch (this.command) {
+                    case 'help':
+                        this.printHelp();
+                        break;
+                    case 'keys':
+                        this.printKeys();
+                        break;
+                    case 'skip':
+                        this.log(`Skipping ${currentItemName}`);
+                        this.item.nextItem();
+                        break;
+                    //  case 'cheat':
+                    //      this.cheat(quizItem);
+                    //     return;
+                    default:
+                        this.input.next(this.command);
+                        break;
+                }
+            }
+            this.command = '';
+        }
+    }
+    log(text: string) {
+        this.lines.push(text);
+        this.scrollToBottom = true;
+    }
+    focus(element: HTMLElement) {
+        element.focus();
+    }
+
+    private printHelp() {
+        [
+            '<key> <guess>[,<guess>...]: Attempt answer(s) to current item for the specified key',
+            'skip: Skip current item',
+            'cheat: Display answer(s) to current item',
+            'keys: Display a list of keys',
+            'help: Display this message',
+        ].forEach(line => this.log(line));
+    }
+
+    private printKeys() {
+        DETAIL_FIELDS.forEach(detailField => {
+            this.log(`${detailField.shortcut}: ${detailField.key}`);
+        });
+    }
+
+}
+
+function getFields(progress: Progress, done: boolean): Field[] {
+    const fields: Field[] = [];
+    DETAIL_FIELDS.forEach(detailField => {
+        if (detailField.key in progress) {
+            const field: Field = {
+                key: detailField.key,
+                entries: progress[detailField.key].filter(entry => entry.done == done).map(entry => ({
+                    key: entry.key,
+                    text: entry.text,
+                }))
+            };
+            if (field.entries.length) {
+                fields.push(field);
+            }
+        }
+    });
+    return fields;
+}
+
+function itemRef(db: AngularFireDatabase, user: string, regionKey: string, itemKey: string) {
+    return db.database.ref('details').child(user).child(regionKey).child(itemKey);
+}
+
 // export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
 
-//     lines: string[] = [];
 
 //     command: string;
 
-//     terminal: Element;
 
-//     scrollToBottom: boolean;
 
 //     itemSubscription: Subscription;
-//     commandSubscription: Subscription;
 
 //     constructor(private route: ActivatedRoute, private readonly afs: AngularFirestore, public el: ElementRef) {
 //     }
@@ -55,7 +205,6 @@ export class QuizComponent {}
         // this.commandSubscription = this.input
         //     .withLatestFrom(this.quizItem)
         //     .subscribe(([command, quizItem]) => {
-        //         this.log(`${quizItem.id} > ${command}`);
         //         switch (command) {
         //             case 'help':
         //                 this.printHelp();
@@ -119,7 +268,6 @@ export class QuizComponent {}
     // }
 
     // progress = new BehaviorSubject<PrintField[]>([]);
-    // private input = new Subject<string>();
     // itemIdObservable = new ItemId(
     //     this.route.snapshot.paramMap.has('itemId') ?
     //     [this.route.snapshot.paramMap.get('itemId')] :
@@ -170,10 +318,7 @@ export class QuizComponent {}
     //         .filter(quizItem => quizItem.total > 0)
     //     );
 
-    // log(text: string) {
-    //     this.lines.push(text);
-    //     this.scrollToBottom = true;
-    // }
+
 
     // private tokenMatches(token, label, answer) {
     //     const indexStart = answer.toLowerCase().indexOf(token.toLowerCase());
@@ -192,22 +337,7 @@ export class QuizComponent {}
     //     this.log(`✘ ${label}: ${token}`);
     // }
 
-    // private printKeys() {
-    //     for (let i = 0; i < DETAIL_FIELDS.length; i++) {
-    //         const detailField = DETAIL_FIELDS[i];
-    //         this.log(`${detailField.shortcut}: ${detailField.key}`);
-    //     }
-    // }
 
-    // private printHelp() {
-    //     [
-    //         '<key> <guess>[,<guess>...]: Attempt answer(s) to current item for the specified key',
-    //         'skip: Skip current item',
-    //         'cheat: Display answer(s) to current item',
-    //         'keys: Display a list of keys',
-    //         'help: Display this message',
-    //     ].forEach(line => this.log(line));
-    // }
 
     // private cheat(quizItem: QuizItem){
     //     const remaining = getProgress(quizItem, false);
@@ -220,27 +350,7 @@ export class QuizComponent {}
     //     }
     // }
 
-    // ngAfterViewInit() {
-    //     this.terminal = this.el.nativeElement.querySelector('#terminal');
-    //     this.terminal.querySelector('input').focus();
-    // }
 
-    // ngAfterViewChecked() {
-    //     if (this.scrollToBottom) {
-    //         this.terminal.scrollTop = this.terminal.scrollHeight;
-    //         this.scrollToBottom = false;
-    //     }
-    // }
-
-    // handleCommand(event: KeyboardEvent) {
-    //     if (event.keyCode == 13 && this.command) {
-    //         this.command = this.command.trim();
-    //         if (this.command) {
-    //             this.input.next(this.command);
-    //             this.command = '';
-    //         }
-    //     }
-    // }
     // sendCommand(command: string) {
     //     if (command) {
     //         command = command.trim();
@@ -253,14 +363,6 @@ export class QuizComponent {}
     //     element.focus();
     // }
 
-//     ngOnDestroy() {
-//         if (this.itemSubscription) {
-//             this.itemSubscription.unsubscribe();
-//         }
-//         if (this.commandSubscription) {
-//             this.commandSubscription.unsubscribe();
-//         }
-//     }
 
 // }
 

@@ -55,6 +55,15 @@ export interface Field {
   entries: Entry[];
 }
 
+export interface EntryProgress {
+  key: string;
+  text: string;
+  done: boolean;
+}
+
+export interface Progress {
+  [key: string]: EntryProgress[];
+}
 // export interface Details {
 
 //     'Introduction'?: Entry[];

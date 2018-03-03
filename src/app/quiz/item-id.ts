@@ -1,45 +1,93 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { firestore } from 'firebase';
+import { Subject } from 'rxjs/Subject';
+import { Observable } from 'rxjs/Observable';
+import { Query } from 'firebase/database';
+import { AngularFireDatabase } from 'angularfire2/database';
 
-export class ItemId extends BehaviorSubject<string> {
+interface Item {
+	regionKey: string;
+	itemKey: string;
+	itemName: string;
+}
 
-	private itemIds: string[] = [];
+export abstract class IdSubject extends Subject<Item> {
+	protected items: Item[];
 	private itemIndex = 0;
-
-	constructor(ids: firestore.Query | string[]) {
-		super(null);
-		if (ids instanceof firestore.Query) {
-			// console.log('Getting IDs by query');
-			ids.get().then(
-				value => {
-					value.forEach(snap => this.itemIds.push(snap.id));
-					shuffle(this.itemIds);
-					this.nextItem();
-				},
-				error => {
-					this.error(error);
-					this.complete();
-				}
-			);
-		} else if (ids instanceof Array) {
-			// console.log('Getting IDs by array: ' + JSON.stringify(ids));
-			this.itemIds = ids;
-			shuffle(this.itemIds);
-			this.nextItem();
-		} else {
-			console.error('Neither query nor array: ' + JSON.stringify(ids));
-		}
-	}
-
 	nextItem() {
-		if (this.itemIndex < this.itemIds.length) {
-			this.next(this.itemIds[this.itemIndex]);
+		if (this.itemIndex < this.items.length) {
+			this.next(this.items[this.itemIndex]);
 			this.itemIndex++;
 		} else {
 			this.complete();
 		}
 	}
+}
 
+export class ItemSubject extends IdSubject {
+	constructor(db: AngularFireDatabase, user: string, regionKey: string, itemKey: string) {
+		super();
+		itemRef(db, user, regionKey, itemKey).once('value', itemSnap => {
+			this.items = [{
+				regionKey: regionKey,
+				itemKey: itemSnap.key,
+				itemName: itemSnap.val()
+			}];
+			this.nextItem();
+		});
+	}
+}
+
+export class RegionSubject extends IdSubject {
+	constructor(db: AngularFireDatabase, user: string, regionKey: string) {
+		super();
+		regionRef(db, user, regionKey).once('value', regionSnap => {
+			this.items = [];
+			regionSnap.forEach(itemSnap => {
+				this.items.push({
+					regionKey: regionKey,
+					itemKey: itemSnap.key,
+					itemName: itemSnap.val()
+				});
+				return false;
+			});
+			shuffle(this.items);
+			this.nextItem();
+		});
+	}
+}
+
+export class AllRegionsSubject extends IdSubject {
+	constructor(db: AngularFireDatabase, user: string) {
+		super();
+		userRef(db, user).once('value', userSnap => {
+			this.items = [];
+			userSnap.forEach(regionSnap => {
+				const regionKey = regionSnap.key;
+				regionSnap.forEach(itemSnap => {
+					this.items.push({
+						regionKey: regionKey,
+					itemKey: itemSnap.key,
+						itemName: itemSnap.val()
+					});
+					return false;
+				});
+				return false;
+			});
+			shuffle(this.items);
+			this.nextItem();
+		});
+	}
+}
+
+function userRef(db: AngularFireDatabase, user: string) {
+	return db.database.ref('items').child(user);
+}
+
+function regionRef(db: AngularFireDatabase, user: string, regionKey: string) {
+	return userRef(db, user).child(regionKey);
+}
+
+function itemRef(db: AngularFireDatabase, user: string, regionKey: string, itemKey: string) {
+	return regionRef(db, user, regionKey).child(itemKey);
 }
 
 function shuffle(array: any[]): void {
