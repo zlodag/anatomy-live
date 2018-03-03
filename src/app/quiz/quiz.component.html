@@ -9,7 +9,7 @@
     <div class="col-6">
         <div id="terminal" class="p-3" (click)="focusOnInput()">
             <div>Anatomy Quiz! (Enter "help" for help)</div>
-            <div *ngFor="let line of lines">{{ line }}</div>
+            <div *ngFor="let line of lines" [innerHTML]="line"></div>
             <div *ngIf="!item.isStopped && item | async as current">
                 <span id="prompt">{{ current.itemName }} &gt;</span>
                 <input id="command_prompt" type="text" [(ngModel)]="command" autocomplete="off" (keydown)="handleCommand(current.itemName, $event)"/>

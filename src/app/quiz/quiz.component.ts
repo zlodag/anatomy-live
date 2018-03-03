@@ -1,4 +1,5 @@
-import { NgModule, Component, OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, ElementRef } from '@angular/core';
+import { NgModule, Component, OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, ElementRef, SecurityContext } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
@@ -20,7 +21,7 @@ import { IdSubject, ItemSubject, RegionSubject, AllRegionsSubject } from './item
 })
 export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
 
-    constructor(private route: ActivatedRoute, private readonly db: AngularFireDatabase, public el: ElementRef) {
+    constructor(private route: ActivatedRoute, private readonly db: AngularFireDatabase, public el: ElementRef, private sanitizer: DomSanitizer) {
     }
 
     command: string;
@@ -192,8 +193,8 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
             this.command = '';
         }
     }
-    private log(text: string) {
-        this.lines.push(text);
+    private log(text: string | SafeHtml) {
+        this.lines.push(this.sanitizer.sanitize(SecurityContext.HTML, text));
         this.scrollToBottom = true;
     }
     focusOnInput() {
@@ -210,27 +211,74 @@ export class QuizComponent implements OnInit, AfterViewInit, AfterViewChecked, O
     }
 
     private informCorrect(answer: string, indexStart: number, indexEnd: number, label: string) {
-        this.log(`✔ ${label}: ${answer.slice(0, indexStart) + answer.slice(indexStart, indexEnd).toUpperCase() + answer.slice(indexEnd, answer.length)}`);
+        this.log(this.sanitizer.bypassSecurityTrustHtml(
+            this.sanitize(`✔ ${label}: ${answer.slice(0, indexStart)}`) +
+            '<span class="bg-success text-white">' + 
+            // '<span class="text-success font-weight-bold">' + 
+            this.sanitize(answer.slice(indexStart, indexEnd)) +
+            '</span>' +
+            this.sanitize(answer.slice(indexEnd, answer.length))
+        ));
+    }
+
+    private sanitize(text: string): string {
+        return escape(text);
+        // return this.sanitizer.sanitize(SecurityContext.HTML, text);
     }
 
     private informIncorrect(token: string, label: string) {
-        this.log(`✘ ${label}: ${token}`);
+        this.log(this.sanitizer.bypassSecurityTrustHtml(
+            this.sanitize(`✘ ${label}: `) +
+            // '<span class="text-danger font-weight-bold">' + 
+            '<span class="bg-danger text-white">' + 
+            this.sanitize(token) +
+            '</span>'
+        ));
+
+        
     }
 
     private printHelp() {
+        this.log(this.sanitizer.bypassSecurityTrustHtml('<u>Help</u>'));
+        const helpKeys: {key: string, text: string}[] = 
         [
-            '<key> <guess>[,<guess>...]: Attempt answer(s) to current item for the specified key',
-            'skip: Skip current item',
-            'cheat: Display answer(s) to current item',
-            'cheat <key>: Display answer(s) to current item for the specified key',
-            'keys: Display a list of keys',
-            'help: Display this message',
-        ].forEach(line => this.log(line));
+            {key: '<key> <guess>[,<guess>...]', text: 'Attempt answer(s) to current item for the specified key'},
+            {key: 'skip', text: 'Skip current item'},
+            {key: 'cheat', text: 'Display answer(s) to current item'},
+            {key: 'cheat <key>', text: 'Display answer(s) to current item for the specified key'},
+            {key: 'keys', text: 'Display a list of keys'},
+            {key: 'help', text: 'Display this message'},
+        ];
+        helpKeys.forEach(line => {
+            console.log(this.sanitize(line.key));
+            this.log(this.sanitizer.bypassSecurityTrustHtml(
+                '<span class="font-weight-bold">' +
+                this.sanitize(line.key) +
+                '</span>'
+            ));
+            this.log(this.sanitizer.bypassSecurityTrustHtml(
+                '<span class="ml-3">' +
+                this.sanitize(line.text) +
+                '</span>'
+            ));
+        });
     }
 
     private printKeys() {
+        this.log(this.sanitizer.bypassSecurityTrustHtml('<u>Keys</u>'));
         DETAIL_FIELDS.forEach(detailField => {
-            this.log(`${detailField.shortcut}: ${detailField.key}`);
+            this.log(this.sanitizer.bypassSecurityTrustHtml(
+                '<span class="font-weight-bold">' +
+                this.sanitize(detailField.shortcut) +
+                '</span>: ' +
+                // +
+            // ));
+            // this.log(this.sanitizer.bypassSecurityTrustHtml(
+                // '<span>' +
+                this.sanitize(detailField.key)
+                 // +
+                // '</span>'
+            ));
         });
     }
 
