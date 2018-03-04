@@ -18,21 +18,15 @@ export class ItemDetailListComponent {
 
   @Input() showQuizLink = false;
 
-  @Output() add = new EventEmitter<{
-    field: string;
-    entry: string;
-  }>();
   @Output() set = new EventEmitter<{
     field: string;
     entryKey: string;
     entry: string;
   }>();
+
   @Output() remove = new EventEmitter<{
     field: string;
     entryKey: string;
   }>();
-
-  detailFields = DETAIL_FIELDS;
-  selectedField = '';
 
 }

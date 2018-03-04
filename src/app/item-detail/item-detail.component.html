@@ -5,7 +5,15 @@
 	[fields]="fields"
 	[edit]="editState.edit | async"
 	[showQuizLink]="true"
-	(add)="add($event.field, $event.entry)"
 	(set)="set($event.field, $event.entryKey, $event.entry)"
 	(remove)="remove($event.field, $event.entryKey)"
 	></app-item-detail-list>
+<div *ngIf="editState.edit | async" class="form">
+	<div class="form-group">
+		<select class="form-control" [(ngModel)]="selectedField">
+			<option value="">Add entry</option>
+			<option *ngFor="let field of detailFields" [value]="field.key">{{ field.key }}</option>
+		</select>
+	</div>
+	 <app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add(selectedField, $event)"></app-add-string>
+</div>

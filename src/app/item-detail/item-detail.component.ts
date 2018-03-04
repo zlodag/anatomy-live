@@ -19,6 +19,8 @@ export class ItemDetailComponent implements OnInit {
     .child(this.route.snapshot.paramMap.get('regionId'))
     .child(this.route.snapshot.paramMap.get('itemId'));
 
+  detailFields = DETAIL_FIELDS;
+  selectedField = '';
   fields: Observable<Field[]> = this.db.object(this.itemRef).snapshotChanges().map(action => {
       const fields: Field[] = [];
       DETAIL_FIELDS.forEach(detailField => {

@@ -21,12 +21,3 @@
         </ul>
     </li>
 </ul>
-<div *ngIf="edit" class="form">
-	<div class="form-group">
-		<select class="form-control" [(ngModel)]="selectedField">
-			<option value="">Add entry</option>
-			<option *ngFor="let field of detailFields" [value]="field.key">{{ field.key }}</option>
-		</select>
-	</div>
-	 <app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add.emit({field: selectedField, entry: $event})"></app-add-string>
-</div>
