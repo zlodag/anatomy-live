@@ -7,11 +7,13 @@ import { EditStateService } from '../edit-state.service';
 @Component({
   selector: 'app-region-list',
   templateUrl: './region-list.component.html',
-  styleUrls: ['./region-list.component.css']
 })
 export class RegionListComponent implements OnDestroy {
 
-  private regionList = this.db.list(this.db.database.ref('regions').child(this.route.snapshot.paramMap.get('userId')), ref => ref.orderByValue());
+  private regionList = this.db.list(
+    this.db.database.ref('regions').child(this.route.snapshot.paramMap.get('userId')),
+    ref => ref.orderByValue()
+  );
   public regions = [];
   private sub = this.regionList.snapshotChanges().map(actions => actions.map(a => ({
     key: a.key,
@@ -19,7 +21,7 @@ export class RegionListComponent implements OnDestroy {
   }))).subscribe(regions => {
     this.regions = regions;
   });
-  
+
   constructor(public editState: EditStateService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
 
   ngOnDestroy() {
@@ -30,13 +32,13 @@ export class RegionListComponent implements OnDestroy {
     this.regionList.push(newEntry);
   }
 
-  update(regionKey: string, name: string){
+  update(regionKey: string, name: string) {
     this.regionList.set(regionKey, name);
   }
 
   delete(regionKey: string) {
     this.regionList.remove(regionKey).catch(error => {
-      if (error.code == 'PERMISSION_DENIED') {
+      if (error.code === 'PERMISSION_DENIED') {
         alert('Region is not empty');
       }
     });

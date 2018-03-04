@@ -2,7 +2,7 @@ import { NgModule, Component, AfterViewInit, AfterViewChecked, OnDestroy, Elemen
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
@@ -20,8 +20,8 @@ interface Segment {
 
 @Component({
     selector: 'app-quiz',
-	templateUrl: './quiz.component.html',
-	styleUrls: ['./quiz.component.css'],
+    templateUrl: './quiz.component.html',
+    styleUrls: ['./quiz.component.css'],
 })
 export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
 
@@ -90,7 +90,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
             this.item.nextItem();
         }
     })).subscribe(([input, progress]) => {
-        if (input.toLowerCase() == 'cheat') {
+        if (input.toLowerCase() === 'cheat') {
             this.logTitle('Cheat');
             getFields(progress, false).forEach(field => this.cheat(field));
             return;
@@ -100,11 +100,11 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
             const shortcut = match[1].toLowerCase();
             for (let i = 0; i < DETAIL_FIELDS.length; i++) {
                 const detailField = DETAIL_FIELDS[i];
-                if (shortcut == detailField.shortcut) {
+                if (shortcut === detailField.shortcut) {
                     this.logTitle('Cheat');
                     this.cheat({
                         key: detailField.key,
-                        entries: detailField.key in progress ? 
+                        entries: detailField.key in progress ?
                             progress[detailField.key].filter(entry => !entry.done).map(entry => ({
                                 key: entry.key,
                                 text: entry.text,
@@ -121,7 +121,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
             const shortcut = match[1].toLowerCase();
             for (let i = 0; i < DETAIL_FIELDS.length; i++) {
                 const detailField = DETAIL_FIELDS[i];
-                if (shortcut == detailField.shortcut) {
+                if (shortcut === detailField.shortcut) {
                     const tokens = match[2].split(',');
                     let changed = false;
                     for (let j = 0; j < tokens.length; j++) {
@@ -202,7 +202,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
         }
     }
     handleCommand(currentItemName: string, event: KeyboardEvent) {
-        if (event.keyCode == 13) {
+        if (event.keyCode === 13) {
             this.command = this.command ? this.command.trim() : '';
             this.log({classes: [], text: `${currentItemName} > ${this.command}`});
             if (this.command.length) {
@@ -234,7 +234,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
 
     focusOnInput() {
-        const input = (<HTMLElement>this.terminal.querySelector("#command_prompt"));
+        const input = (<HTMLElement>this.terminal.querySelector('#command_prompt'));
         if (input) {
             input.focus();
         }
@@ -242,7 +242,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
 
     private tokenMatches(token: string, label: string, answer: string) {
         const indexStart = answer.toLowerCase().indexOf(token.toLowerCase());
-        if (indexStart != -1) {
+        if (indexStart !== -1) {
             this.informCorrect(answer, indexStart, indexStart + token.length, label);
             return true;
         }
@@ -299,7 +299,7 @@ function getFields(progress: Progress, done: boolean): Field[] {
         if (detailField.key in progress) {
             const field: Field = {
                 key: detailField.key,
-                entries: progress[detailField.key].filter(entry => entry.done == done).map(entry => ({
+                entries: progress[detailField.key].filter(entry => entry.done === done).map(entry => ({
                     key: entry.key,
                     text: entry.text,
                 }))

@@ -1,38 +1,24 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-// import { EditStateService } from '../edit-state.service';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-edit-string',
   templateUrl: './edit-string.component.html',
-  styleUrls: ['./edit-string.component.css']
 })
-export class EditStringComponent implements OnInit, OnChanges {
+export class EditStringComponent implements OnChanges {
 
-  constructor(
-    // public editState: EditStateService
-    ) { }
+  constructor() { }
 
   @Input() label: string;
+
   @Input() text: string;
+
+  @Output() update = new EventEmitter<string>();
+
+  @Output() delete = new EventEmitter<void>();
 
   newString: string;
 
-  @Output() update = new EventEmitter<string>();
-  @Output() delete = new EventEmitter<void>();
-
-  ngOnInit() {
-  }
-
   ngOnChanges(changes: SimpleChanges) {
-    // for (let propName in changes) {
-    //   let chng = changes[propName];
-    //   let cur  = JSON.stringify(chng.currentValue);
-    //   let prev = JSON.stringify(chng.previousValue);
-    //   console.log(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
-    //   if (propName == 'text') {
-    //     this.newString = change.previousValue;
-    //   }
-    // }
     const change = changes['text'];
     if (change) {
       this.newString = change.currentValue;
@@ -40,7 +26,7 @@ export class EditStringComponent implements OnInit, OnChanges {
   }
 
   validText() {
-    return this.newString && this.newString.trim().length > 0 && this.newString.trim() != this.text;
+    return this.newString && this.newString.trim().length > 0 && this.newString.trim() !== this.text;
   }
 
   updateValue() {

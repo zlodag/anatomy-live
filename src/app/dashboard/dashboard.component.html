@@ -1,21 +1,8 @@
 <app-breadcrumbs></app-breadcrumbs>
-<!-- <ul class="list-unstyled">
-	<li><a routerLink="regions">Regions</a></li>
-	<li><a routerLink="quiz">Quiz</a></li>
-</ul>
- -->
 <h4>{{ route.snapshot.data.profileName }}</h4>
 <ul class="list-group">
 	<li class="list-group-item">
 		<a routerLink="regions">Regions</a>
 	  	<a class="badge badge-primary float-right" routerLink="quiz">Quiz</a>
 	</li>
-	<!-- <li><a routerLink="quiz">Quiz</a></li>
-	<li *ngFor="let region of regions | async" class="list-group-item">
-	  	<a [routerLink]="region">{{region}}</a>
-	  	<a class="badge badge-primary float-right" [routerLink]="[region, 'quiz']">Quiz</a>
-	</li>
-	<li *ngIf="editState.edit" class="list-group-item">
-		<app-add-string label="region" (newString)="newRegion($event)"></app-add-string>
-	</li> -->
 </ul>

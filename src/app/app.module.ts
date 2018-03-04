@@ -17,17 +17,16 @@ import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
-import { DeleteItemComponent } from './delete-item/delete-item.component';
 import { EditStateService } from './edit-state.service';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCNC0Rl6WPNd1qzTpyVchkyImJc1Fy4T54',
-  authDomain: 'ranzcr-anatomy.firebaseapp.com',
-  databaseURL: 'https://ranzcr-anatomy.firebaseio.com',
-  projectId: 'ranzcr-anatomy',
-  storageBucket: 'ranzcr-anatomy.appspot.com',
-  messagingSenderId: '51391304946'
-}
+  apiKey: 'AIzaSyAnAVo8J_rGWUOpsqMn6e7KcHEEesjNLls',
+  authDomain: 'anatomy-live.firebaseapp.com',
+  databaseURL: 'https://anatomy-live.firebaseio.com',
+  projectId: 'anatomy-live',
+  storageBucket: 'anatomy-live.appspot.com',
+  messagingSenderId: '385016421303'
+};
 
 @NgModule({
   imports: [
@@ -51,7 +50,6 @@ const firebaseConfig = {
     UserListComponent,
     EditStringComponent,
     ItemDetailListComponent,
-    DeleteItemComponent,
   ],
   providers: [
     EditStateService

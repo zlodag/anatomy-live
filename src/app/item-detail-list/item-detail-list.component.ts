@@ -1,13 +1,12 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Field, DETAIL_FIELDS } from '../models';
 import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-item-detail-list',
   templateUrl: './item-detail-list.component.html',
-  styleUrls: ['./item-detail-list.component.css']
 })
-export class ItemDetailListComponent implements OnInit {
+export class ItemDetailListComponent {
 
   constructor() { }
 
@@ -15,15 +14,9 @@ export class ItemDetailListComponent implements OnInit {
 
   @Input() fields: Observable<Field[]>;
 
-  @Input() edit: boolean = false;
+  @Input() edit = false;
 
-  @Input() showQuizLink: boolean = false;
-
-  ngOnInit() {
-  }
-
-  detailFields = DETAIL_FIELDS;
-  selectedField: string = "";
+  @Input() showQuizLink = false;
 
   @Output() add = new EventEmitter<{
     field: string;
@@ -38,5 +31,8 @@ export class ItemDetailListComponent implements OnInit {
     field: string;
     entryKey: string;
   }>();
+
+  detailFields = DETAIL_FIELDS;
+  selectedField = '';
 
 }

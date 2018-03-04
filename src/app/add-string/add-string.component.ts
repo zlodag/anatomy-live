@@ -1,11 +1,10 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-add-string',
   templateUrl: './add-string.component.html',
-  styleUrls: ['./add-string.component.css']
 })
-export class AddStringComponent implements OnInit {
+export class AddStringComponent {
 
   constructor() { }
 
@@ -13,10 +12,7 @@ export class AddStringComponent implements OnInit {
 
   @Output() newString = new EventEmitter<string>();
 
-  value: string = '';
-
-  ngOnInit() {
-  }
+  value = '';
 
   add() {
     let s = this.value;
@@ -28,14 +24,4 @@ export class AddStringComponent implements OnInit {
       }
     }
   }
-
-  // getNewString = () => {
-  //   let s = prompt(`Add ${this.label}`);
-  //   if (s) {
-  //     s = s.trim();
-  //     if (s) {
-  //       this.newString.emit(s);
-  //     }
-  //   }
-  // }
 }

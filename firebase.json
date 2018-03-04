@@ -11,7 +11,14 @@
         "source": "**",
         "destination": "/index.html"
       }
-    ]
+    ],
+    "headers": [ {
+      "source" : "**/*.@(png|bundle.js)",
+      "headers" : [ {
+        "key" : "Cache-Control",
+        "value" : "max-age=31536000"
+      } ]
+    } ]
   },
   "database": {
     "rules": "database.rules.json"

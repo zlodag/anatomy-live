@@ -6,11 +6,14 @@ import { EditStateService } from '../edit-state.service';
 
 @Component({
   selector: 'app-item-list',
-  templateUrl: './item-list.component.html'
+  templateUrl: './item-list.component.html',
 })
 export class ItemListComponent implements OnDestroy {
 
-  private itemList = this.db.list(this.db.database.ref('items').child(this.route.snapshot.paramMap.get('userId')).child(this.route.snapshot.paramMap.get('regionId')), ref => ref.orderByValue());
+  private itemList = this.db.list(this.db.database.ref('items')
+    .child(this.route.snapshot.paramMap.get('userId'))
+    .child(this.route.snapshot.paramMap.get('regionId')
+  ), ref => ref.orderByValue());
   public items = [];
   private sub = this.itemList.snapshotChanges().map(actions => actions.map(a => ({
     key: a.key,
@@ -18,7 +21,7 @@ export class ItemListComponent implements OnDestroy {
   }))).subscribe(items => {
     this.items = items;
   });
-  
+
   constructor(public editState: EditStateService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
 
   ngOnDestroy() {
@@ -29,13 +32,13 @@ export class ItemListComponent implements OnDestroy {
     this.itemList.push(newEntry);
   }
 
-  update(itemKey: string, name: string){
+  update(itemKey: string, name: string) {
     this.itemList.set(itemKey, name);
   }
 
   delete(itemKey: string) {
     this.itemList.remove(itemKey).catch(error => {
-      if (error.code == 'PERMISSION_DENIED') {
+      if (error.code === 'PERMISSION_DENIED') {
         alert('Item is not empty');
       }
     });

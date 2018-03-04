@@ -9,7 +9,6 @@ import 'rxjs/add/operator/map';
 @Component({
   selector: 'app-item-detail',
   templateUrl: './item-detail.component.html',
-  styleUrls: ['./item-detail.component.css']
 })
 export class ItemDetailComponent implements OnInit {
 
@@ -19,7 +18,7 @@ export class ItemDetailComponent implements OnInit {
     .child(this.route.snapshot.paramMap.get('userId'))
     .child(this.route.snapshot.paramMap.get('regionId'))
     .child(this.route.snapshot.paramMap.get('itemId'));
-  
+
   fields: Observable<Field[]> = this.db.object(this.itemRef).snapshotChanges().map(action => {
       const fields: Field[] = [];
       DETAIL_FIELDS.forEach(detailField => {
@@ -52,7 +51,7 @@ export class ItemDetailComponent implements OnInit {
     this.itemRef.child(field).child(entryKey).set(entry);
   }
 
-  remove(field: string, entryKey: string){
+  remove(field: string, entryKey: string) {
     this.itemRef.child(field).child(entryKey).remove();
   }
 }

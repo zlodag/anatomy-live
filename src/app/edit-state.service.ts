@@ -10,22 +10,24 @@ import 'rxjs/add/observable/combineLatest';
 export class EditStateService implements OnDestroy {
 
   constructor(auth: AngularFireAuth, route: ActivatedRoute) {
-  	this.subscription = Observable.combineLatest(auth.authState, route.paramMap).subscribe(([user, params])  => {
+    this.subscription = Observable.combineLatest(auth.authState, route.paramMap).subscribe(([user, params])  => {
       const ownerId = params.get('userId');
-      this._enabled = user && (!ownerId || user.uid == ownerId);
+      this._enabled = user && (!ownerId || user.uid === ownerId);
       if (this._edit.getValue() && !this._enabled) {
         this._edit.next(false);
       }
     });
   }
 
-  private _enabled: boolean = false;
+  private _enabled = false;
 
   private _edit: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
+  private subscription: Subscription;
+
   public edit = this._edit.asObservable();
 
-  public toggle(){
+  public toggle() {
     if (this._edit.getValue()) {
       this._edit.next(false);
     } else if (this._enabled) {
@@ -33,13 +35,11 @@ export class EditStateService implements OnDestroy {
     }
   }
 
-  public get enabled() : boolean {
-  	return this._enabled;
+  public get enabled(): boolean {
+    return this._enabled;
   }
 
-  private subscription: Subscription;
-
   ngOnDestroy() {
-  	this.subscription.unsubscribe();
+    this.subscription.unsubscribe();
   }
 }
