@@ -1,7 +1,7 @@
 {
   "rules": {
     "users": {
-      ".read" : "true",
+      ".read" : true,
       "$uid": {
         ".write": "auth != null && auth.uid == $uid && (newData.exists() || !root.child('regions').child($uid).exists())",
         ".validate": "newData.isString() && newData.val().length != 0"
@@ -9,7 +9,7 @@
     },
     "regions" : {
       "$uid": {
-        ".read" : "true",
+        ".read" : true,
         "$regionId": {
           ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).exists() && (newData.exists() || !root.child('items').child($uid).child($regionId).exists())",
           ".validate": "newData.isString() && newData.val().length != 0"
@@ -18,10 +18,10 @@
     },
     "items" : {
       "$uid": {
-        ".read" : "true",
+        ".read" : true,
         "$regionId": {
           "$itemId": {
-            ".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || !root.child('details').child($uid).child($regionId).child($itemId).exists())",
+            ".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || (!root.child('details').child($uid).child($regionId).child($itemId).exists() && !root.child('images').child($uid).child($regionId).child($itemId).exists()))",
             ".validate": "newData.isString() && newData.val().length != 0"
           }
         }
@@ -31,11 +31,33 @@
       "$uid": {
         "$regionId": {
           "$itemId": {
-            ".read" : "true",
+            ".read" : true,
             "$field" : {
               "$entry" : {
                 ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists() && ($field == 'Introduction' || $field == 'Structure' || $field == 'Superior relations' || $field == 'Inferior relations' || $field == 'Anterior relations' || $field == 'Posterior relations' || $field == 'Medial relations' || $field == 'Lateral relations' || $field == 'Superior boundary' || $field == 'Inferior boundary' || $field == 'Anterior boundary' || $field == 'Posterior boundary' || $field == 'Medial boundary' || $field == 'Lateral boundary' || $field == 'Contents' || $field == 'Articulations' || $field == 'Attachments' || $field == 'Special structures' || $field == 'Nerve supply' || $field == 'Arterial supply' || $field == 'Venous drainage' || $field == 'Lymphatic drainage' || $field == 'Variants')",
                 ".validate": "newData.isString() && newData.val().length != 0"
+              }
+            }
+          }
+        }
+      },
+    },
+    "images" : {
+      "$uid": {
+        "$regionId": {
+          "$itemId": {
+            ".read" : true,
+            "$entry" : {
+              ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists()",
+              ".validate": "newData.hasChildren(['url','filename'])",
+              "url" : {
+                ".validate": "newData.isString() && newData.val().length != 0"
+              },
+              "filename" : {
+                ".validate": "newData.isString() && newData.val().length != 0"
+              },
+              "$other" : {
+                ".validate": false
               }
             }
           }

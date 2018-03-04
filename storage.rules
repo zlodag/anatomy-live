@@ -1,0 +1,22 @@
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{uid}/{region}/{item} {
+      match /{image} {
+        allow read: if true;
+        allow delete: if request.auth != null &&
+          request.auth.uid == uid;
+        allow create: if request.auth != null &&
+          request.auth.uid == uid &&
+          request.resource.size < 10 * 1024 * 1024 &&
+          request.resource.contentType in [
+            'image/png',
+            'image/gif',
+            'image/jpeg',
+            'image/svg+xml',
+            'image/bmp',
+            'image/tiff'
+          ];
+      }
+    }
+  }
+}

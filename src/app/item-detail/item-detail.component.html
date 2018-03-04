@@ -8,12 +8,34 @@
 	(set)="set($event.field, $event.entryKey, $event.entry)"
 	(remove)="remove($event.field, $event.entryKey)"
 	></app-item-detail-list>
-<div *ngIf="editState.edit | async" class="form">
+<div *ngIf="editState.edit | async">
 	<div class="form-group">
 		<select class="form-control" [(ngModel)]="selectedField">
 			<option value="">Add entry</option>
 			<option *ngFor="let field of detailFields" [value]="field.key">{{ field.key }}</option>
 		</select>
 	</div>
-	 <app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add(selectedField, $event)"></app-add-string>
+	<app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add(selectedField, $event)"></app-add-string>
+	<div class="form-group">
+		<div class="input-group">
+			<div class="custom-file">
+				<input type="file" class="custom-file-input" accept="image/*" id="file_upload" (change)="fileSelected($event.target.files)">
+				<label class="custom-file-label" for="file_upload">{{ selectedFile ? selectedFile.name : 'Upload image' }}</label>
+			</div>
+			<div class="input-group-append">
+				<button [disabled]="!selectedFile" class="btn btn-outline-secondary" type="button" (click)="uploadFile()">Upload</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-lg-6" *ngFor="let image of images | async">
+		<figure class="figure mx-auto">
+			<img [src]="image.url" class="figure-img img-fluid rounded" [alt]="image.key">
+			<figcaption class="figure-caption">
+				{{ image.filename }}
+				<button *ngIf="editState.edit | async" type="button" class="btn btn-outline-danger" (click)="removeImage(image)">Remove</button>
+			</figcaption>
+		</figure>
+	</div>
 </div>
