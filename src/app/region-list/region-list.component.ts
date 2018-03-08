@@ -44,4 +44,7 @@ export class RegionListComponent implements OnDestroy {
     });
   }
 
+  copy(regionKey: string){
+    
+  }
 }

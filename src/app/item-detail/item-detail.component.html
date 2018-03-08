@@ -1,10 +1,10 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
+<h4 class="d-inline">{{ route.snapshot.data.itemName }}</h4>
+<a class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
 <app-item-detail-list
-	[title]="route.snapshot.data.itemName"
-	[fields]="fields"
 	[edit]="editState.edit | async"
-	[showQuizLink]="true"
+	[fields]="fields"
 	(set)="set($event.field, $event.entryKey, $event.entry)"
 	(remove)="remove($event.field, $event.entryKey)"
 	></app-item-detail-list>

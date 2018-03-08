@@ -10,13 +10,9 @@ export class ItemDetailListComponent {
 
   constructor() { }
 
-  @Input() title: string;
-
-  @Input() fields: Observable<Field[]>;
-
   @Input() edit = false;
 
-  @Input() showQuizLink = false;
+  @Input() fields: Observable<Field[]>;
 
   @Output() set = new EventEmitter<{
     field: string;

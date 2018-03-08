@@ -5,7 +5,7 @@
 	<div *ngIf="profiles.mine as profile">
 		<span *ngIf="profile.name; else noProfile">
 			<app-edit-string
-				*ngIf="editState.edit | async; else noEdit"
+				*ngIf="editState.edit; else noEdit"
 				label="Profile"
 				[text]="profile.name"
 				(update)="update(profile.id, $event)"
@@ -26,6 +26,7 @@
 	<ul class="list-group my-3">
 		<li *ngFor="let profile of profiles.others" class="list-group-item">
 			<a [routerLink]="profile.id">{{ profile.name }}</a>
+			<a class="badge badge-success float-right" [routerLink]="[profile.id, 'copy']">Copy</a>
 		</li>
 	</ul>
 </div>
