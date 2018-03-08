@@ -19,8 +19,6 @@ import { UserListComponent } from './user-list/user-list.component';
 import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
 import { EditStateService } from './edit-state.service';
-import { CopyButtonComponent } from './copy-button/copy-button.component';
-import { CopyComponent } from './copy/copy.component';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAnAVo8J_rGWUOpsqMn6e7KcHEEesjNLls',
@@ -54,8 +52,6 @@ const firebaseConfig = {
     UserListComponent,
     EditStringComponent,
     ItemDetailListComponent,
-    CopyButtonComponent,
-    CopyComponent,
   ],
   providers: [
     EditStateService

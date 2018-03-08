@@ -32,6 +32,7 @@
         "$regionId": {
           "$itemId": {
             ".read" : true,
+            ".write": "auth != null && auth.uid == $uid && !root.child('items').child($uid).child($regionId).child($itemId).exists() && newData.parent().parent().parent().parent().child('items').child($uid).child($regionId).child($itemId).exists()",
             ".validate": "newData.hasChildren()",
             "$field" : {
               ".validate": "$field == 'Introduction' || $field == 'Structure' || $field == 'Superior relations' || $field == 'Inferior relations' || $field == 'Anterior relations' || $field == 'Posterior relations' || $field == 'Medial relations' || $field == 'Lateral relations' || $field == 'Superior boundary' || $field == 'Inferior boundary' || $field == 'Anterior boundary' || $field == 'Posterior boundary' || $field == 'Medial boundary' || $field == 'Lateral boundary' || $field == 'Contents' || $field == 'Articulations' || $field == 'Attachments' || $field == 'Special structures' || $field == 'Nerve supply' || $field == 'Arterial supply' || $field == 'Venous drainage' || $field == 'Lymphatic drainage' || $field == 'Variants'",
@@ -49,6 +50,8 @@
         "$regionId": {
           "$itemId": {
             ".read" : true,
+            ".write": "auth != null && auth.uid == $uid && !root.child('items').child($uid).child($regionId).child($itemId).exists() && newData.parent().parent().parent().parent().child('items').child($uid).child($regionId).child($itemId).exists()",
+            ".validate": "newData.hasChildren()",
             "$entry" : {
               ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists()",
               ".validate": "newData.hasChildren(['url','filename'])",

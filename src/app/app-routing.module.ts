@@ -6,7 +6,6 @@ import { QuizComponent } from './quiz/quiz.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
-import { CopyComponent } from './copy/copy.component';
 import { UserNameResolver, RegionNameResolver, ItemNameResolver } from './resolvers.service';
 
 const appRoutes: Routes = [
@@ -27,10 +26,6 @@ const appRoutes: Routes = [
       {
         path: 'quiz',
         component: QuizComponent,
-      },
-      {
-        path: 'copy',
-        component: CopyComponent,
       },
       {
         path: 'regions',
