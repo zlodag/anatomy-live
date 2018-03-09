@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
@@ -8,25 +8,20 @@ import { OwnerService } from '../owner.service';
   selector: 'app-region-list',
   templateUrl: './region-list.component.html',
 })
-export class RegionListComponent implements OnDestroy {
+export class RegionListComponent {
+
+  constructor(public ownerService: OwnerService, private route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
 
   private regionList = this.db.list(
     this.db.database.ref('regions').child(this.route.snapshot.paramMap.get('userId')),
     ref => ref.orderByValue()
   );
-  public regions = [];
-  private sub = this.regionList.snapshotChanges().map(actions => actions.map(a => ({
-    key: a.key,
-    name: a.payload.val(),
-  }))).subscribe(regions => {
-    this.regions = regions;
-  });
 
-  constructor(public ownerService: OwnerService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
-
-  ngOnDestroy() {
-    this.sub.unsubscribe();
-  }
+  regions = this.regionList.snapshotChanges()
+    .map(actions => actions.map(a => ({
+      key: a.key,
+      name: a.payload.val(),
+    })));
 
   add(newEntry: string) {
     this.regionList.push(newEntry);
@@ -44,7 +39,4 @@ export class RegionListComponent implements OnDestroy {
     });
   }
 
-  copy(regionKey: string){
-    
-  }
 }

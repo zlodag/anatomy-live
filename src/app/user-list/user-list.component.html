@@ -1,9 +1,9 @@
 <app-breadcrumbs></app-breadcrumbs>
 <button *ngIf="auth.authState | async" type="button" class="btn float-right btn-sm" [ngClass]="edit ? 'btn-dark' : 'btn-outline-dark'" (click)="edit = !edit">Edit</button>
-<h4>Profiles</h4>
-<div *ngIf="profilesObservable | async as profiles">
+<h4 class="my-3">Profiles</h4>
+<div *ngIf="profilesObservable | async as profiles; else loading">
 	<div *ngIf="profiles.mine as profile">
-		<span *ngIf="profile.name; else noProfile">
+		<div *ngIf="profile.name; else noProfile">
 			<app-edit-string
 				*ngIf="edit; else noEdit"
 				label="Profile"
@@ -16,7 +16,7 @@
 					<a class="list-group-item list-group-item-success list-group-item-action" [routerLink]="profile.id">{{ profile.name }}</a>
 				</div>
 			</ng-template>
-		</span>
+		</div>
 		<ng-template #noProfile>
 			<app-add-string label="New profile" (newString)="update(profile.id, $event)"></app-add-string>
 		</ng-template>
@@ -25,3 +25,4 @@
 		<a *ngFor="let profile of profiles.others" class="list-group-item list-group-item-action" [routerLink]="profile.id">{{ profile.name }}</a>
 	</div>
 </div>
+<ng-template #loading><app-loading></app-loading></ng-template>

@@ -29,9 +29,6 @@ export class OwnerService implements OnDestroy {
   public toggleEdit() {
     this._edit = !this._edit;
   }
-  // public set edit(v : boolean) {
-  //   this._edit = v;
-  // }
 
   public get owner(): boolean {
     return this._owner;

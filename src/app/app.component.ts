@@ -7,6 +7,7 @@ import { auth } from 'firebase/app';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
+
   constructor(public afAuth: AngularFireAuth) {
   }
 

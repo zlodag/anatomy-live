@@ -8,8 +8,6 @@ import { Observable } from 'rxjs/Observable';
 })
 export class ItemDetailListComponent {
 
-  constructor() { }
-
   @Input() edit = false;
 
   @Input() fields: Observable<Field[]>;

@@ -1,22 +1,27 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
-<h4 class="d-inline">Regions</h4>
-<a class="badge badge-primary align-text-top" routerLink="../../quiz">Quiz</a>
-<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
-	<app-edit-string
-		*ngFor="let region of regions"
-		label="Region"
-		[text]="region.name"
-		(update)="update(region.key, $event)"
-		(delete)="delete(region.key)"
-		></app-edit-string>
-	<app-add-string label="Region" (newString)="add($event)"></app-add-string>
+<div class="my-3">
+	<h4 class="d-inline">Regions</h4>
+	<a class="badge badge-primary align-text-top" routerLink="../../quiz">Quiz</a>
 </div>
-<ng-template #noEdit>
-	<ul class="list-group my-3">
-		<li *ngFor="let region of regions" class="list-group-item">
-			<a [routerLink]="region.key">{{region.name}}</a>
-			<a class="badge badge-primary float-right" [routerLink]="[region.key, 'quiz']">Quiz</a>
-		</li>
-	</ul>
-</ng-template>
+<div *ngIf="regions | async as regions; else loading">
+	<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
+		<app-edit-string
+			*ngFor="let region of regions"
+			label="Region"
+			[text]="region.name"
+			(update)="update(region.key, $event)"
+			(delete)="delete(region.key)"
+			></app-edit-string>
+		<app-add-string label="Region" (newString)="add($event)"></app-add-string>
+	</div>
+	<ng-template #noEdit>
+		<ul class="list-group my-3">
+			<li *ngFor="let region of regions" class="list-group-item">
+				<a [routerLink]="region.key">{{region.name}}</a>
+				<a class="badge badge-primary float-right" [routerLink]="[region.key, 'quiz']">Quiz</a>
+			</li>
+		</ul>
+	</ng-template>
+</div>
+<ng-template #loading><app-loading></app-loading></ng-template>
