@@ -4,9 +4,9 @@ import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireStorage } from 'angularfire2/storage';
 import { Observable } from 'rxjs/Observable';
 import { DETAIL_FIELDS, Field } from '../models';
-import { EditStateService } from '../edit-state.service';
+import { OwnerService } from '../owner.service';
 import 'rxjs/add/operator/map';
-import { storage as fbStorage } from 'firebase';
+import { storage, FirebaseError } from 'firebase';
 
 interface Image {
   key: string;
@@ -24,7 +24,7 @@ export class ItemDetailComponent {
     private readonly db: AngularFireDatabase,
     private storage: AngularFireStorage,
     public route: ActivatedRoute,
-    public editState: EditStateService,
+    public ownerService: OwnerService,
   ) { }
 
   private userId = this.route.snapshot.paramMap.get('userId');
@@ -97,7 +97,7 @@ export class ItemDetailComponent {
         .child(file.name)
         .put(file, {cacheControl: 'max-age=31536000'})
         .then(snap => {
-          if (snap.state === fbStorage.TaskState.SUCCESS) {
+          if (snap.state === storage.TaskState.SUCCESS) {
             this.imageParentRef.push({
               filename: file.name,
               url: snap.downloadURL
@@ -111,7 +111,13 @@ export class ItemDetailComponent {
   removeImage(image: Image) {
     this.imageParentRef.child(image.key).remove()
       .then(() => this.storage.storage.refFromURL(image.url).delete())
-      .catch(reason => console.error(reason));
+      .catch((error: FirebaseError) => {
+        if (error.code === 'storage/unauthorized') {
+          console.info(error.message);
+        } else {
+          console.error(error.message);
+        }
+      });
   }
 
 }

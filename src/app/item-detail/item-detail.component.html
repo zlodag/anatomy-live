@@ -3,12 +3,12 @@
 <h4 class="d-inline">{{ route.snapshot.data.itemName }}</h4>
 <a class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
 <app-item-detail-list
-	[edit]="editState.edit | async"
+	[edit]="ownerService.owner && ownerService.edit"
 	[fields]="fields"
 	(set)="set($event.field, $event.entryKey, $event.entry)"
 	(remove)="remove($event.field, $event.entryKey)"
 	></app-item-detail-list>
-<div *ngIf="editState.edit | async">
+<div *ngIf="ownerService.owner && ownerService.edit">
 	<div class="form-group">
 		<select class="form-control" [(ngModel)]="selectedField">
 			<option value="">Add entry</option>
@@ -34,7 +34,7 @@
 			<img [src]="image.url" class="figure-img img-fluid rounded" [alt]="image.key">
 			<figcaption class="figure-caption">
 				{{ image.filename }}
-				<button *ngIf="editState.edit | async" type="button" class="btn btn-outline-danger" (click)="removeImage(image)">Remove</button>
+				<button *ngIf="ownerService.owner && ownerService.edit" type="button" class="btn btn-outline-danger" (click)="removeImage(image)">Remove</button>
 			</figcaption>
 		</figure>
 	</div>

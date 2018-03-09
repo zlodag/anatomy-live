@@ -1,10 +1,9 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
-<button *ngIf="copyEnabled" type="button" class="btn float-right btn-sm" [ngClass]="copying ? 'btn-dark' : 'btn-outline-dark'" (click)="copying = !copying">Copy</button>
+<button *ngIf="ownerService.authed && !ownerService.owner" type="button" class="btn float-right btn-sm" [ngClass]="copying ? 'btn-dark' : 'btn-outline-dark'" (click)="copying = !copying">Copy</button>
 <h4 class="d-inline">{{ route.snapshot.data.regionName }}</h4>
 <a class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
-<!-- <label *ngIf="copyEnabled"><input type="checkbox" [(ngModel)]="copying"/> Copy</label> -->
-<div *ngIf="editState.edit | async; else noEdit">
+<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
 	<app-edit-string
 		*ngFor="let item of items"
 		label="Item"
@@ -17,17 +16,17 @@
 <ng-template #noEdit>
 	<ul class="list-group my-3">
 		<li *ngFor="let item of items" class="list-group-item">
-			<input *ngIf="copyEnabled && copying" type="checkbox" class="mr-2" [ngModel]="item.copy" (ngModelChange)="setCopy(item, $event)"/>
+			<input *ngIf="ownerService.authed && !ownerService.owner && copying" type="checkbox" class="mr-2" [ngModel]="item.copy" (ngModelChange)="setCopy(item, $event)"/>
 			<a [routerLink]="item.key">{{item.name}}</a>
 			<a class="badge badge-primary float-right" [routerLink]="[item.key, 'quiz']">Quiz</a>
 		</li>
 	</ul>
 </ng-template>
-<div *ngIf="copyEnabled && copying && copyCount" class="form-inline">
+<div *ngIf="ownerService.authed && !ownerService.owner && copying && copyCount" class="form-inline">
 	<label class="mr-2">Copy {{ copyCount }} selected items to:</label>
 	<select class="form-control mr-2" [(ngModel)]="selectedRegion">
 		<option value="">New region</option>
-		<option *ngFor="let region of myRegions | async" [value]="region.key">{{ region.name }}</option>
+		<option *ngFor="let region of myRegions" [value]="region.key">{{ region.name }}</option>
 	</select>
 	<input
 		*ngIf="!selectedRegion"

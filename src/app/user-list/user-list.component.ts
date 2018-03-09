@@ -3,15 +3,13 @@ import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/observable/combineLatest';
-import 'rxjs/add/operator/withLatestFrom';
-import { EditStateService } from '../edit-state.service';
 
 interface Profile {
   id: string;
   name: string;
 }
+
 interface Profiles {
   mine?: Profile;
   others: Profile[];
@@ -23,10 +21,12 @@ interface Profiles {
 })
 export class UserListComponent {
 
-  constructor(private readonly db: AngularFireDatabase, private afAuth: AngularFireAuth, public editState: EditStateService) { }
+  constructor(private readonly db: AngularFireDatabase, public auth: AngularFireAuth) { }
+
+  edit = false;
 
   profilesObservable: Observable<Profiles> = Observable
-    .combineLatest(this.afAuth.authState, this.db.list('users', ref => ref.orderByValue()).snapshotChanges())
+    .combineLatest(this.auth.authState, this.db.list('users', ref => ref.orderByValue()).snapshotChanges())
     .map(([user, snaps]) => {
       const profiles: Profiles = {
         others: []

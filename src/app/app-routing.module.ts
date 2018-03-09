@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { UserListComponent } from './user-list/user-list.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { QuizComponent } from './quiz/quiz.component';
+import { OwnerComponent } from './owner/owner.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
@@ -15,6 +16,7 @@ const appRoutes: Routes = [
   },
   {
     path: ':userId',
+    component: OwnerComponent,
     resolve: {
       userName: UserNameResolver
     },

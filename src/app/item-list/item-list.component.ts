@@ -2,10 +2,11 @@ import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase, AngularFireAction } from 'angularfire2/database';
-import { database, User } from 'firebase';
+import { database, User, FirebaseError } from 'firebase';
 import { Observable } from 'rxjs/Observable';
-import { EditStateService } from '../edit-state.service';
+import { OwnerService } from '../owner.service';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/first';
 
 interface Item {
@@ -14,60 +15,67 @@ interface Item {
   copy: boolean;
 }
 
+interface Region {
+  key: string;
+  name: string;
+}
+
 @Component({
   selector: 'app-item-list',
   templateUrl: './item-list.component.html',
 })
 export class ItemListComponent implements OnDestroy {
   
-  constructor(private auth: AngularFireAuth, public editState: EditStateService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
+  constructor(private auth: AngularFireAuth, public ownerService: OwnerService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
 
   copying = false;
-  copyEnabled = false;
-  selectedRegion = "";
-  newRegionName = this.route.snapshot.data.regionName;
-  copyCount: number;
   private ownerId = this.route.snapshot.paramMap.get('userId');
   private regionId = this.route.snapshot.paramMap.get('regionId');
-  private copySub = this.auth.authState.subscribe(user  => {
-    this.copyEnabled = user && user.uid !== this.ownerId;
-    this.selectedRegion = "";
-  });
-  private itemList = this.db.list(this.db.database.ref('items').child(this.ownerId).child(this.regionId), ref => ref.orderByValue());
-  public items: Item[] = [];
-  private sub = this.itemList.snapshotChanges().map(actions => actions.map(a => ({
-    key: a.key,
-    name: a.payload.val(),
-    copy: true,
-  }))).subscribe(items => {
-    this.copyCount = items.length;
-    this.items = items;
-  });
-  myRegions = this.auth.authState
+  
+  items: Item[] = [];
+  copyCount: number;
+  private itemsList = this.db.list(this.db.database.ref('items').child(this.ownerId).child(this.regionId), ref => ref.orderByValue());
+  private itemsSub = this.itemsList.snapshotChanges()
+    .subscribe(actions => {
+      this.items = actions.map(a => ({
+        key: a.key,
+        name: a.payload.val(),
+        copy: true,
+      }));
+      this.copyCount = this.items.length;
+    });
+
+  myRegions: Region[] = [];
+  selectedRegion = "";
+  newRegionName = this.route.snapshot.data.regionName;
+  private regionsSub = this.auth.authState
     .switchMap<User, AngularFireAction<database.DataSnapshot>[]>(user => user ?
       this.db.list(this.db.database.ref('regions').child(user.uid)).snapshotChanges() :
       Observable.of([])
     )
-    .map(action => action.map(a => ({
-      key: a.key,
-      name: a.payload.val(),
-    })));
+    .subscribe(action => {
+      this.myRegions = action.map(a => ({
+        key: a.key,
+        name: a.payload.val(),
+      }));
+      this.selectedRegion = "";
+    });
 
   ngOnDestroy() {
-    this.sub.unsubscribe();
-    this.copySub.unsubscribe();
+    this.itemsSub.unsubscribe();
+    this.regionsSub.unsubscribe();
   }
 
   add(newEntry: string) {
-    this.itemList.push(newEntry);
+    this.itemsList.push(newEntry);
   }
 
   update(itemKey: string, name: string) {
-    this.itemList.set(itemKey, name);
+    this.itemsList.set(itemKey, name);
   }
 
   delete(itemKey: string) {
-    this.itemList.remove(itemKey).catch(error => {
+    this.itemsList.remove(itemKey).catch(error => {
       if (error.code === 'PERMISSION_DENIED') {
         alert('Item is not empty');
       }
@@ -91,11 +99,13 @@ export class ItemListComponent implements OnDestroy {
       detailsRef.child(item.key).once('value', detailsSnap =>
        imagesRef.child(item.key).once('value', imagesSnap => {
           const newItemId = this.db.createPushId();
-          const updateObj = {
-            [`items/${userId}/${regionKey}/${newItemId}`]: item.name,
-            [`details/${userId}/${regionKey}/${newItemId}`]: detailsSnap.val(),
-            [`images/${userId}/${regionKey}/${newItemId}`]: imagesSnap.val(),
-          };
+          const updateObj = {[`items/${userId}/${regionKey}/${newItemId}`]: item.name};
+          if (detailsSnap.exists()) {
+            updateObj[`details/${userId}/${regionKey}/${newItemId}`] = detailsSnap.val();
+          }
+          if (imagesSnap.exists()) {
+            updateObj[`images/${userId}/${regionKey}/${newItemId}`] = imagesSnap.val();
+          }
           rootRef.update(updateObj);
         })
       )
@@ -114,8 +124,18 @@ export class ItemListComponent implements OnDestroy {
   copyToNew(regionName: string) {
     this.auth.authState.first().subscribe(user => {
       if (user) {
-        this.db.database.ref('regions').child(user.uid).push(regionName)
-          .then((ref: database.Reference) => this._copyToExisting(user.uid, ref.key));
+        const ref = this.db.database.ref('regions').child(user.uid).push();
+        ref.set(regionName, (error: FirebaseError) => {
+          if (error) {
+            if (error.code === 'PERMISSION_DENIED'){
+              alert('Set your profile name first');
+            } else {
+              console.error(error.message);
+            }
+          } else {
+            this._copyToExisting(user.uid, ref.key);
+          }
+        });
       }
     });
   }

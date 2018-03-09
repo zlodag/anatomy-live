@@ -2,7 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
-import { EditStateService } from '../edit-state.service';
+import { OwnerService } from '../owner.service';
 
 @Component({
   selector: 'app-region-list',
@@ -22,7 +22,7 @@ export class RegionListComponent implements OnDestroy {
     this.regions = regions;
   });
 
-  constructor(public editState: EditStateService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
+  constructor(public ownerService: OwnerService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
 
   ngOnDestroy() {
     this.sub.unsubscribe();

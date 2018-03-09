@@ -1,1 +1,1 @@
-<button *ngIf="visible | async" type="button" class="btn float-right btn-sm" [ngClass]="editState.edit ? 'btn-dark' : 'btn-outline-dark'" (click)="editState.edit = !editState.edit">Edit</button>
+<button *ngIf="ownerService.owner" type="button" class="btn float-right btn-sm" [ngClass]="ownerService.edit ? 'btn-dark' : 'btn-outline-dark'" (click)="ownerService.toggleEdit()">Edit</button>
