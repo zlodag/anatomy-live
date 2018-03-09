@@ -51,10 +51,7 @@ export class ItemListComponent implements OnDestroy {
     .map(action => action.map(a => ({
       key: a.key,
       name: a.payload.val(),
-    })))
-    .do(regions => {
-      console.log('Just subscribed to regions', regions);
-    });
+    })));
 
   ngOnDestroy() {
     this.sub.unsubscribe();
@@ -77,39 +74,6 @@ export class ItemListComponent implements OnDestroy {
     });
   }
 
-  copyToExisting(regionKey: string) {
-    this.auth.authState.first().subscribe(user => {
-      if (user) {
-        const rootRef = this.db.database.ref();
-        const detailsRef = rootRef.child('details').child(this.ownerId).child(this.regionId);
-        const imagesRef = rootRef.child('images').child(this.ownerId).child(this.regionId);
-        this.items.filter(item => item.copy).forEach(item => 
-          detailsRef.child(item.key).once('value', detailsSnap =>
-           imagesRef.child(item.key).once('value', imagesSnap => {
-              const newItemId = this.db.createPushId();
-              const updateObj = {
-                [`items/${user.uid}/${regionKey}/${newItemId}`]: item.name,
-                [`details/${user.uid}/${regionKey}/${newItemId}`]: detailsSnap.val(),
-                [`images/${user.uid}/${regionKey}/${newItemId}`]: imagesSnap.val(),
-              };
-              console.log(updateObj);
-              rootRef.update(updateObj);
-            })
-          )
-        );
-      }
-    });
-  }
-
-  copyToNew(regionName: string) {
-    console.log(regionName);
-    console.log(this.items.filter(item => item.copy));
-  }
-
-  // private getItemsToCopy() {
-  //   return this.items.filter(item => item.copy);
-  // }
-
   setCopy(item: Item, copy: boolean) {
     item.copy = copy;
     if (copy) {
@@ -117,6 +81,43 @@ export class ItemListComponent implements OnDestroy {
     } else {
       this.copyCount--;
     }
+  }
+
+  private _copyToExisting(userId: string, regionKey: string) {
+    const rootRef = this.db.database.ref();
+    const detailsRef = rootRef.child('details').child(this.ownerId).child(this.regionId);
+    const imagesRef = rootRef.child('images').child(this.ownerId).child(this.regionId);
+    this.items.filter(item => item.copy).forEach(item => 
+      detailsRef.child(item.key).once('value', detailsSnap =>
+       imagesRef.child(item.key).once('value', imagesSnap => {
+          const newItemId = this.db.createPushId();
+          const updateObj = {
+            [`items/${userId}/${regionKey}/${newItemId}`]: item.name,
+            [`details/${userId}/${regionKey}/${newItemId}`]: detailsSnap.val(),
+            [`images/${userId}/${regionKey}/${newItemId}`]: imagesSnap.val(),
+          };
+          rootRef.update(updateObj);
+        })
+      )
+    );
+    this.copying = false;
+  }
+
+  copyToExisting(regionKey: string) {
+    this.auth.authState.first().subscribe(user => {
+      if (user) {
+        this._copyToExisting(user.uid, regionKey);
+      }
+    });
+  }
+
+  copyToNew(regionName: string) {
+    this.auth.authState.first().subscribe(user => {
+      if (user) {
+        this.db.database.ref('regions').child(user.uid).push(regionName)
+          .then((ref: database.Reference) => this._copyToExisting(user.uid, ref.key));
+      }
+    });
   }
 
 }
