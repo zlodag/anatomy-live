@@ -57,6 +57,11 @@ export class BreadcrumbsComponent implements OnInit {
             });
           }
         }
+      } else if (this.route.snapshot.data.backupData) {
+        this.crumbs.push({
+          label: 'Backup',
+          routerLink: ['/', userId, 'backup']
+        });
       } else if (this.quiz) {
         this.crumbs.push({
           label: 'Quiz (all)',

@@ -1,15 +1,17 @@
-<input *ngIf="!selectedFile" type="file" accept="application/json" (change)="fileSelected($event.target.files)" />
-<ul *ngIf="backup | async as regions">
+<app-breadcrumbs></app-breadcrumbs>
+<button type="button" class="btn float-right btn-danger btn-sm" (click)="restore()">Restore from this backup</button>
+<h3>Backup from {{ backupData.child('timestamp').val() | date: 'full' }}</h3>
+<ul>
 	<li *ngFor="let region of regions">
 		<h4>{{ region.text }}</h4>
 		<ul>
 			<li *ngFor="let item of region.items">
 				<h5>{{ item.text }}</h5>
 				<ul>
-					<li *ngFor="let field of item.details">
+					<li *ngFor="let field of item.fields">
 						<h6>{{ field.key }}</h6>
 						<ul>
-							<li *ngFor="let entry of field.items">
+							<li *ngFor="let entry of field.entries">
 								{{ entry.text }}
 							</li>
 						</ul>

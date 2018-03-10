@@ -4,10 +4,10 @@
 	<h4 class="d-inline">{{ route.snapshot.data.itemName }}</h4>
 	<a class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
 </div>
-<div *ngIf="fields | async as fields; else loading">
+<div *ngIf="details | async as details; else loading">
 	<app-item-detail-list
 		[edit]="ownerService.owner && ownerService.edit"
-		[fields]="fields"
+		[fields]="details.fields"
 		(set)="set($event.field, $event.entryKey, $event.entry)"
 		(remove)="remove($event.field, $event.entryKey)"
 		></app-item-detail-list>
@@ -22,16 +22,13 @@
 			<app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add(selectedField, $event)"></app-add-string>
 		</div>
 	</div>
-</div>
-<ng-template #loading><app-loading></app-loading></ng-template>
-<div *ngIf="images | async as images">
 	<div class="row">
-		<div class="col-lg-6" *ngFor="let image of images">
+		<div class="col-lg-6" *ngFor="let image of details.images">
 			<figure class="figure mx-auto">
 				<img [src]="image.url" class="figure-img img-fluid rounded" [alt]="image.key">
 				<figcaption class="figure-caption">
 					{{ image.filename }}
-					<button *ngIf="ownerService.owner && ownerService.edit" type="button" class="btn btn-sm btn-outline-danger float-right" (click)="removeImage(image)">Remove</button>
+					<button *ngIf="ownerService.owner && ownerService.edit" type="button" class="btn btn-sm btn-outline-danger float-right ml-3" (click)="removeImage(image)">Remove</button>
 				</figcaption>
 			</figure>
 		</div>
@@ -48,4 +45,5 @@
 		</div>
 	</div>
 </div>
+<ng-template #loading><app-loading></app-loading></ng-template>
 

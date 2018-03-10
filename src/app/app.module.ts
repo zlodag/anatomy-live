@@ -8,6 +8,7 @@ import { AngularFireStorageModule } from 'angularfire2/storage';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { BackupComponent } from './backup/backup.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
@@ -20,7 +21,6 @@ import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
 import { OwnerComponent } from './owner/owner.component';
 import { LoadingComponent } from './loading/loading.component';
-import { RestoreComponent } from './restore/restore.component';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAnAVo8J_rGWUOpsqMn6e7KcHEEesjNLls',
@@ -44,6 +44,7 @@ const firebaseConfig = {
   declarations: [
     AppComponent,
     DashboardComponent,
+    BackupComponent,
     RegionListComponent,
     ItemListComponent,
     ItemDetailComponent,
@@ -56,7 +57,6 @@ const firebaseConfig = {
     ItemDetailListComponent,
     OwnerComponent,
     LoadingComponent,
-    RestoreComponent,
   ],
   providers: [],
   bootstrap: [AppComponent]

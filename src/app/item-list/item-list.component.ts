@@ -93,21 +93,15 @@ export class ItemListComponent {
   private _copyToExisting(allItems: Item[], userId: string, regionKey: string) {
     const rootRef = this.db.database.ref();
     const detailsRef = rootRef.child('details').child(this.ownerId).child(this.regionId);
-    const imagesRef = rootRef.child('images').child(this.ownerId).child(this.regionId);
     allItems.filter(item => item.copy).forEach(item =>
-      detailsRef.child(item.key).once('value', detailsSnap =>
-        imagesRef.child(item.key).once('value', imagesSnap => {
-          const newItemId = this.db.createPushId();
-          const updateObj = {[`items/${userId}/${regionKey}/${newItemId}`]: item.name};
-          if (detailsSnap.exists()) {
-            updateObj[`details/${userId}/${regionKey}/${newItemId}`] = detailsSnap.val();
-          }
-          if (imagesSnap.exists()) {
-            updateObj[`images/${userId}/${regionKey}/${newItemId}`] = imagesSnap.val();
-          }
-          rootRef.update(updateObj);
-        })
-      )
+      detailsRef.child(item.key).once('value', detailsSnap => {
+        const newItemId = this.db.createPushId();
+        const updateObj = {[`items/${userId}/${regionKey}/${newItemId}`]: item.name};
+        if (detailsSnap.exists()) {
+          updateObj[`details/${userId}/${regionKey}/${newItemId}`] = detailsSnap.val();
+        }
+        rootRef.update(updateObj);
+      })
     );
     this.copying = false;
   }

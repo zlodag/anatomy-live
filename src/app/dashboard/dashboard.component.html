@@ -5,10 +5,10 @@
 		<a routerLink="regions">Regions</a>
 	  	<a class="badge badge-primary float-right" routerLink="quiz">Quiz</a>
 	</div>
-	<button *ngIf="ownerService.owner" type="button" class="list-group-item list-group-item-info list-group-item-action" (click)="backup()">Download backup</button>
-	<a *ngIf="ownerService.owner" routerLink="restore" class="list-group-item list-group-item-warning list-group-item-action">Restore from backup</a>
+	<button *ngIf="ownerService.owner" type="button" class="list-group-item list-group-item-info list-group-item-action" (click)="backup()">Perform online backup</button>
+	<a *ngIf="ownerService.owner && restoreTimestamp | async as timestamp" routerLink="backup" class="list-group-item list-group-item-warning list-group-item-action">View online backup ({{ timestamp | date: 'full' }})</a>
 </div>
-<div class="input-group" *ngIf="ownerService.owner">
+<!-- <div class="input-group" *ngIf="ownerService.owner">
 	<div class="custom-file">
 		<input type="file" class="custom-file-input" accept="application/json" id="file_upload" (change)="fileSelected($event.target.files)">
 		<label class="custom-file-label" for="file_upload">{{ selectedFile ? selectedFile.name : 'Restore from backup' }}</label>
@@ -16,4 +16,4 @@
 	<div class="input-group-append">
 		<button [disabled]="!selectedFile" class="btn btn-outline-secondary" type="button" (click)="restore()">Restore</button>
 	</div>
-</div>
+</div> -->

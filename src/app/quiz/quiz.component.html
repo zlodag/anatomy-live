@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col-6">
         <h4 class="d-inline">{{ (item | async)?.itemName }}</h4>
-        <app-item-detail-list [fields]="fields"></app-item-detail-list>
+        <app-item-detail-list *ngIf="fields | async as fields" [fields]="fields"></app-item-detail-list>
     </div>
     <div class="col-6">
         <div id="terminal" class="p-3" (click)="focusOnInput()">

@@ -4,11 +4,11 @@ import { UserListComponent } from './user-list/user-list.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { OwnerComponent } from './owner/owner.component';
-import { RestoreComponent } from './restore/restore.component';
+import { BackupComponent } from './backup/backup.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
-import { UserNameResolver, RegionNameResolver, ItemNameResolver } from './resolvers.service';
+import { UserNameResolver, RegionNameResolver, ItemNameResolver, BackupDataResolver } from './resolvers.service';
 
 const appRoutes: Routes = [
   {
@@ -27,8 +27,11 @@ const appRoutes: Routes = [
         component: DashboardComponent,
       },
       {
-        path: 'restore',
-        component: RestoreComponent,
+        path: 'backup',
+        component: BackupComponent,
+        resolve: {
+          backupData: BackupDataResolver
+        }
       },
       {
         path: 'quiz',
@@ -93,6 +96,7 @@ const appRoutes: Routes = [
     UserNameResolver,
     RegionNameResolver,
     ItemNameResolver,
+    BackupDataResolver,
   ],
   exports: [
     RouterModule

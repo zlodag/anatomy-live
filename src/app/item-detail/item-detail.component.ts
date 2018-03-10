@@ -14,6 +14,11 @@ interface Image {
   filename: string;
 }
 
+interface Details {
+  fields: Field[];
+  images: Image[];
+}
+
 @Component({
   selector: 'app-item-detail',
   templateUrl: './item-detail.component.html',
@@ -28,59 +33,115 @@ export class ItemDetailComponent {
   ) { }
 
   private userId = this.route.snapshot.paramMap.get('userId');
+
   private regionId = this.route.snapshot.paramMap.get('regionId');
+
   private itemId = this.route.snapshot.paramMap.get('itemId');
-  private itemRef = this.db.database.ref('details')
-    .child(this.userId)
-    .child(this.regionId)
-    .child(this.itemId);
-  private imageParentRef = this.db.database.ref('images')
+
+  private detailsRef = this.db.database.ref('details')
     .child(this.userId)
     .child(this.regionId)
     .child(this.itemId);
 
   detailFields = DETAIL_FIELDS;
+
   selectedField = '';
+
   selectedFile: File = null;
 
-  images: Observable<Image[]> = this.db.list(this.imageParentRef, ref => ref.orderByKey())
+  details: Observable<Details> = this.db.object(this.detailsRef)
     .snapshotChanges()
-    .map(action => action.map(a => ({
-      key: a.key,
-      url: a.payload.child('url').val(),
-      filename: a.payload.child('filename').val()
-    })));
-  fields: Observable<Field[]> = this.db.object(this.itemRef).snapshotChanges().map(action => {
-      const fields: Field[] = [];
-      DETAIL_FIELDS.forEach(detailField => {
-        if (action.payload.hasChild(detailField.key)) {
-          const field: Field = {
-            key: detailField.key,
-            entries: []
-          };
-          action.payload.child(detailField.key).forEach(snap => {
-            field.entries.push({
-              key: snap.key,
-              text: snap.val()
+    .map(action => {
+      const fieldsSnap = action.payload.child('fields');
+      const fields: Field[] = DETAIL_FIELDS
+          .filter(detailField => fieldsSnap.hasChild(detailField.key))
+          .map(detailField => {
+            const field: Field = {
+              key: detailField.key,
+              entries: [],
+            };
+            fieldsSnap.child(detailField.key).forEach(snap => {
+              field.entries.push({
+                key: snap.key,
+                text: snap.val()
+              });
+              return false;
             });
-            return false;
+            return field;
           });
-          fields.push(field);
-        }
+        const images: Image[] = [];
+        action.payload.child('images').forEach(snap => {
+          images.push({
+            key: snap.key,
+            url: snap.child('url').val(),
+            filename: snap.child('filename').val()
+          });
+          return false;
+        });
+        return {
+          fields: fields,
+          images: images,
+        };
       });
-      return fields;
-    });
+  //     DETAIL_FIELDS.forEach(detailField => {
+  //       if (action.payload.child('fields').hasChild(detailField.key)) {
+  //         const field: Field = {
+  //           key: detailField.key,
+  //           entries: []
+  //         };
+  //         action.payload.child(detailField.key).forEach(snap => {
+  //           field.entries.push({
+  //             key: snap.key,
+  //             text: snap.val()
+  //           });
+  //           return false;
+  //         });
+  //         fields.push(field);
+  //       }
+  //     });
+  //     return details;
+  //   });
+
+  // images: Observable<Image[]> = this.db.list(this.imagesRef, ref => ref.orderByKey())
+  //   .snapshotChanges()
+  //   .map(action => action.map(a => ({
+  //     key: a.key,
+  //     url: a.payload.child('url').val(),
+  //     filename: a.payload.child('filename').val()
+  //   })));
+  // fields: Observable<Field[]> = this.db.object(this.fieldsRef)
+  //   .snapshotChanges()
+  //   .map(action => {
+  //     const fields: Field[] = [];
+  //     DETAIL_FIELDS.forEach(detailField => {
+  //       if (action.payload.hasChild(detailField.key)) {
+  //         const field: Field = {
+  //           key: detailField.key,
+  //           entries: []
+  //         };
+  //         action.payload.child(detailField.key).forEach(snap => {
+  //           field.entries.push({
+  //             key: snap.key,
+  //             text: snap.val()
+  //           });
+  //           return false;
+  //         });
+  //         fields.push(field);
+  //       }
+  //     });
+  //     return fields;
+  //   });
 
   add(field: string, entry: string) {
-    this.itemRef.child(field).push(entry);
+    this.detailsRef.child('fields').child(field).push(entry);
   }
 
   set(field: string, entryKey: string, entry: string) {
-    this.itemRef.child(field).child(entryKey).set(entry);
+    this.detailsRef.child('fields').child(field).child(entryKey).set(entry);
   }
 
   remove(field: string, entryKey: string) {
-    this.itemRef.child(field).child(entryKey).remove();
+    this.detailsRef.child('fields').child(field).child(entryKey).remove();
   }
 
   fileSelected(files: FileList) {
@@ -98,7 +159,7 @@ export class ItemDetailComponent {
         .put(file, {cacheControl: 'max-age=31536000'})
         .then(snap => {
           if (snap.state === fBstorage.TaskState.SUCCESS) {
-            this.imageParentRef.push({
+            this.detailsRef.child('images').push({
               filename: file.name,
               url: snap.downloadURL
             });
@@ -109,7 +170,7 @@ export class ItemDetailComponent {
   }
 
   removeImage(image: Image) {
-    this.imageParentRef.child(image.key).remove()
+    this.detailsRef.child('images').child(image.key).remove()
       .then(() => this.storage.storage.refFromURL(image.url).delete())
       .catch((error: FirebaseError) => {
         if (error.code === 'storage/unauthorized') {

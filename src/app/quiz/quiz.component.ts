@@ -77,7 +77,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
         this.commandSubscription.unsubscribe();
       }
     )
-    .switchMap(item => this.userRef.child(item.regionKey).child(item.itemKey).once('value'))
+    .switchMap(item => this.userRef.child(item.regionKey).child(item.itemKey).child('fields').once('value'))
     .do(item => this.focusOnInput())
     .map((detailsSnap: database.DataSnapshot) => {
       const progress: Progress = {};
