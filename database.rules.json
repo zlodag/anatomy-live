@@ -1,6 +1,7 @@
 {
   "rules": {
     "users": {
+      ".indexOn": ".value",
       ".read" : true,
       "$uid": {
         ".write": "auth != null && auth.uid == $uid && (newData.exists() || !root.child('regions').child($uid).exists())",
@@ -9,6 +10,7 @@
     },
     "regions" : {
       "$uid": {
+        ".indexOn": ".value",
         ".read" : true,
         "$regionId": {
           ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).exists() && (newData.exists() || !root.child('items').child($uid).child($regionId).exists())",
@@ -20,6 +22,7 @@
       "$uid": {
         ".read" : true,
         "$regionId": {
+          ".indexOn": ".value",
           "$itemId": {
             ".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || (!root.child('details').child($uid).child($regionId).child($itemId).exists() && !root.child('images').child($uid).child($regionId).child($itemId).exists()))",
             ".validate": "newData.isString() && newData.val().length != 0"
@@ -36,7 +39,7 @@
             ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.exists() && !root.child('items').child($uid).child($regionId).child($itemId).exists() && newData.parent().parent().parent().parent().child('items').child($uid).child($regionId).child($itemId).exists()",
             ".validate": "newData.hasChildren()",
             "$field" : {
-              ".validate": "$field == 'Introduction' || $field == 'Structure' || $field == 'Superior relations' || $field == 'Inferior relations' || $field == 'Anterior relations' || $field == 'Posterior relations' || $field == 'Medial relations' || $field == 'Lateral relations' || $field == 'Superior boundary' || $field == 'Inferior boundary' || $field == 'Anterior boundary' || $field == 'Posterior boundary' || $field == 'Medial boundary' || $field == 'Lateral boundary' || $field == 'Contents' || $field == 'Articulations' || $field == 'Attachments' || $field == 'Special structures' || $field == 'Nerve supply' || $field == 'Arterial supply' || $field == 'Venous drainage' || $field == 'Lymphatic drainage' || $field == 'Variants'",
+              ".validate": "($field == 'Introduction' || $field == 'Structure' || $field == 'Superior relations' || $field == 'Inferior relations' || $field == 'Anterior relations' || $field == 'Posterior relations' || $field == 'Medial relations' || $field == 'Lateral relations' || $field == 'Superior boundary' || $field == 'Inferior boundary' || $field == 'Anterior boundary' || $field == 'Posterior boundary' || $field == 'Medial boundary' || $field == 'Lateral boundary' || $field == 'Contents' || $field == 'Articulations' || $field == 'Attachments' || $field == 'Special structures' || $field == 'Nerve supply' || $field == 'Arterial supply' || $field == 'Venous drainage' || $field == 'Lymphatic drainage' || $field == 'Variants') && newData.hasChildren()",
               "$entry" : {
                 ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists()",
                 ".validate": "newData.isString() && newData.val().length != 0"
