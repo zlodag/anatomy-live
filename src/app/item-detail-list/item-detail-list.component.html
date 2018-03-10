@@ -1,11 +1,11 @@
-<ul class="list-group my-3">
-    <li *ngFor="let field of fields | async" class="list-group-item">
+<ul class="list-group my-3" *ngIf="fields.length">
+    <li *ngFor="let field of fields" class="list-group-item">
         <h5>{{ field.key }}</h5>
         <ul class="list-unstyled">
             <li *ngFor="let entry of field.entries">
             	<form *ngIf="edit; else noEdit" #updateForm="ngForm" (ngSubmit)="set.emit({field: field.key, entryKey: entry.key, entry: updateForm.value.updatedValue})">
 					<div class="form-group">
-						<div class="input-group">
+						<div class="input-group input-group-sm">
 						  <input name="updatedValue" type="text" class="form-control" [ngModel]="entry.text" [placeholder]="field.key" required>
 						  <div class="input-group-append">
 						    <button class="btn btn-outline-info" type="submit" [disabled]="!updateForm.form.valid || !updateForm.value.updatedValue || !updateForm.value.updatedValue.trim().length || updateForm.value.updatedValue.trim() === entry.text">Update</button>

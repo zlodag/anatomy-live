@@ -11,9 +11,9 @@ export class OwnerService implements OnDestroy {
 
   private _edit = false;
 
-  private _authed: boolean = false;
+  private _authed = false;
 
-  private _owner: boolean = false;
+  private _owner = false;
 
   private ownerId = this.route.snapshot.paramMap.get('userId');
 
@@ -22,7 +22,7 @@ export class OwnerService implements OnDestroy {
     this._owner = user && user.uid === this.ownerId;
   });
 
-  public get edit() : boolean {
+  public get edit(): boolean {
     return this._edit;
   }
 

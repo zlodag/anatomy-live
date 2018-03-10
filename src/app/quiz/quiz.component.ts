@@ -35,7 +35,7 @@ export class QuizComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     {classes: ['font-weight-bold'], text: 'help'},
     {classes: [], text: ' for help)'},
   ]];
-  
+
   private scrollToBottom: boolean;
 
   private terminal: Element;

@@ -6,7 +6,7 @@ import { Observable } from 'rxjs/Observable';
 import { DETAIL_FIELDS, Field } from '../models';
 import { OwnerService } from '../owner.service';
 import 'rxjs/add/operator/map';
-import { storage, FirebaseError } from 'firebase';
+import { storage as fBstorage, FirebaseError } from 'firebase';
 
 interface Image {
   key: string;
@@ -97,7 +97,7 @@ export class ItemDetailComponent {
         .child(file.name)
         .put(file, {cacheControl: 'max-age=31536000'})
         .then(snap => {
-          if (snap.state === storage.TaskState.SUCCESS) {
+          if (snap.state === fBstorage.TaskState.SUCCESS) {
             this.imageParentRef.push({
               filename: file.name,
               url: snap.downloadURL
@@ -113,7 +113,7 @@ export class ItemDetailComponent {
       .then(() => this.storage.storage.refFromURL(image.url).delete())
       .catch((error: FirebaseError) => {
         if (error.code === 'storage/unauthorized') {
-          console.info(error.message);
+          console.log(error.message);
         } else {
           console.error(error.message);
         }

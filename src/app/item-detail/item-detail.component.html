@@ -1,26 +1,46 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
-<h4 class="d-inline">{{ route.snapshot.data.itemName }}</h4>
-<a class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
-<app-item-detail-list
-	[edit]="ownerService.owner && ownerService.edit"
-	[fields]="fields"
-	(set)="set($event.field, $event.entryKey, $event.entry)"
-	(remove)="remove($event.field, $event.entryKey)"
-	></app-item-detail-list>
-<div *ngIf="ownerService.owner && ownerService.edit">
-	<div class="form-group">
-		<select class="form-control" [(ngModel)]="selectedField">
-			<option value="">Add entry</option>
-			<option *ngFor="let field of detailFields" [value]="field.key">{{ field.key }}</option>
-		</select>
+<div class="my-3">
+	<h4 class="d-inline">{{ route.snapshot.data.itemName }}</h4>
+	<a class="badge badge-primary align-text-top" routerLink="quiz">Quiz</a>
+</div>
+<div *ngIf="fields | async as fields; else loading">
+	<app-item-detail-list
+		[edit]="ownerService.owner && ownerService.edit"
+		[fields]="fields"
+		(set)="set($event.field, $event.entryKey, $event.entry)"
+		(remove)="remove($event.field, $event.entryKey)"
+		></app-item-detail-list>
+	<div *ngIf="ownerService.owner && ownerService.edit" class="form-row">
+		<div class="form-group col-md-3 col-lg-2">
+			<select class="form-control" [(ngModel)]="selectedField">
+				<option value="">Add entry</option>
+				<option *ngFor="let field of detailFields" [value]="field.key">{{ field.key }}</option>
+			</select>
+		</div>
+		<div class="col-md-9 col-lg-10">
+			<app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add(selectedField, $event)"></app-add-string>
+		</div>
 	</div>
-	<app-add-string *ngIf="selectedField" [label]="selectedField" (newString)="add(selectedField, $event)"></app-add-string>
-	<div class="form-group">
+</div>
+<ng-template #loading><app-loading></app-loading></ng-template>
+<div *ngIf="images | async as images">
+	<div class="row">
+		<div class="col-lg-6" *ngFor="let image of images">
+			<figure class="figure mx-auto">
+				<img [src]="image.url" class="figure-img img-fluid rounded" [alt]="image.key">
+				<figcaption class="figure-caption">
+					{{ image.filename }}
+					<button *ngIf="ownerService.owner && ownerService.edit" type="button" class="btn btn-sm btn-outline-danger float-right" (click)="removeImage(image)">Remove</button>
+				</figcaption>
+			</figure>
+		</div>
+	</div>
+	<div *ngIf="ownerService.owner && ownerService.edit" class="form-group">
 		<div class="input-group">
 			<div class="custom-file">
 				<input type="file" class="custom-file-input" accept="image/*" id="file_upload" (change)="fileSelected($event.target.files)">
-				<label class="custom-file-label" for="file_upload">{{ selectedFile ? selectedFile.name : 'Upload image' }}</label>
+				<label class="custom-file-label" for="file_upload">{{ selectedFile ? 'Selected image: ' + selectedFile.name : 'Upload image' }}</label>
 			</div>
 			<div class="input-group-append">
 				<button [disabled]="!selectedFile" class="btn btn-outline-secondary" type="button" (click)="uploadFile()">Upload</button>
@@ -28,14 +48,4 @@
 		</div>
 	</div>
 </div>
-<div class="row">
-	<div class="col-lg-6" *ngFor="let image of images | async">
-		<figure class="figure mx-auto">
-			<img [src]="image.url" class="figure-img img-fluid rounded" [alt]="image.key">
-			<figcaption class="figure-caption">
-				{{ image.filename }}
-				<button *ngIf="ownerService.owner && ownerService.edit" type="button" class="btn btn-outline-danger" (click)="removeImage(image)">Remove</button>
-			</figcaption>
-		</figure>
-	</div>
-</div>
+

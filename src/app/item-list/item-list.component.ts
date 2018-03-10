@@ -25,15 +25,20 @@ interface Region {
   templateUrl: './item-list.component.html',
 })
 export class ItemListComponent {
-  
-  constructor(private auth: AngularFireAuth, public ownerService: OwnerService, public route: ActivatedRoute, private readonly db: AngularFireDatabase) { }
+
+  constructor(
+    private auth: AngularFireAuth,
+    public ownerService: OwnerService,
+    public route: ActivatedRoute,
+    private readonly db: AngularFireDatabase
+  ) { }
 
   copying = false;
 
   private ownerId = this.route.snapshot.paramMap.get('userId');
 
   private regionId = this.route.snapshot.paramMap.get('regionId');
-  
+
   copyCount: number;
 
   private itemsList = this.db.list(this.db.database.ref('items').child(this.ownerId).child(this.regionId), ref => ref.orderByValue());
@@ -48,7 +53,7 @@ export class ItemListComponent {
 
   newRegionName = this.route.snapshot.data.regionName;
 
-  selectedRegionKey: string = '';
+  selectedRegionKey = '';
 
   myRegions: Observable<Region[]> = this.auth.authState
     .switchMap<User, AngularFireAction<database.DataSnapshot>[]>(user => user ?
@@ -89,9 +94,9 @@ export class ItemListComponent {
     const rootRef = this.db.database.ref();
     const detailsRef = rootRef.child('details').child(this.ownerId).child(this.regionId);
     const imagesRef = rootRef.child('images').child(this.ownerId).child(this.regionId);
-    allItems.filter(item => item.copy).forEach(item => 
+    allItems.filter(item => item.copy).forEach(item =>
       detailsRef.child(item.key).once('value', detailsSnap =>
-       imagesRef.child(item.key).once('value', imagesSnap => {
+        imagesRef.child(item.key).once('value', imagesSnap => {
           const newItemId = this.db.createPushId();
           const updateObj = {[`items/${userId}/${regionKey}/${newItemId}`]: item.name};
           if (detailsSnap.exists()) {
@@ -121,7 +126,7 @@ export class ItemListComponent {
         const ref = this.db.database.ref('regions').child(user.uid).push();
         ref.set(regionName, (error: FirebaseError) => {
           if (error) {
-            if (error.code === 'PERMISSION_DENIED'){
+            if (error.code === 'PERMISSION_DENIED') {
               alert('Set your profile name first');
             } else {
               console.error(error.message);

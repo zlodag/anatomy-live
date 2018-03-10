@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Field, DETAIL_FIELDS } from '../models';
-import { Observable } from 'rxjs/Observable';
+import { Field } from '../models';
 
 @Component({
   selector: 'app-item-detail-list',
@@ -10,7 +9,7 @@ export class ItemDetailListComponent {
 
   @Input() edit = false;
 
-  @Input() fields: Observable<Field[]>;
+  @Input() fields: Field[];
 
   @Output() set = new EventEmitter<{
     field: string;
