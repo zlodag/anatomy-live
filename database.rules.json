@@ -29,6 +29,7 @@
     },
     "details" : {
       "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
         "$regionId": {
           "$itemId": {
             ".read" : true,
@@ -47,6 +48,7 @@
     },
     "images" : {
       "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
         "$regionId": {
           "$itemId": {
             ".read" : true,
