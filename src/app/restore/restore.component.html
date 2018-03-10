@@ -1,0 +1,29 @@
+<input *ngIf="!selectedFile" type="file" accept="application/json" (change)="fileSelected($event.target.files)" />
+<ul *ngIf="backup | async as regions">
+	<li *ngFor="let region of regions">
+		<h4>{{ region.text }}</h4>
+		<ul>
+			<li *ngFor="let item of region.items">
+				<h5>{{ item.text }}</h5>
+				<ul>
+					<li *ngFor="let field of item.details">
+						<h6>{{ field.key }}</h6>
+						<ul>
+							<li *ngFor="let entry of field.items">
+								{{ entry.text }}
+							</li>
+						</ul>
+					</li>
+					<li *ngIf="item.images.length">
+						<h6>Images</h6>
+						<ul>
+							<li *ngFor="let image of item.images">
+								<a [href]="image.url">{{ image.filename }}</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+</ul>

@@ -40,7 +40,7 @@
 		<div class="input-group">
 			<div class="custom-file">
 				<input type="file" class="custom-file-input" accept="image/*" id="file_upload" (change)="fileSelected($event.target.files)">
-				<label class="custom-file-label" for="file_upload">{{ selectedFile ? 'Selected image: ' + selectedFile.name : 'Upload image' }}</label>
+				<label class="custom-file-label" for="file_upload">{{ selectedFile ? selectedFile.name : 'Upload image' }}</label>
 			</div>
 			<div class="input-group-append">
 				<button [disabled]="!selectedFile" class="btn btn-outline-secondary" type="button" (click)="uploadFile()">Upload</button>

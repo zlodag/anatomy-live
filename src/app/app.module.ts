@@ -20,6 +20,7 @@ import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
 import { OwnerComponent } from './owner/owner.component';
 import { LoadingComponent } from './loading/loading.component';
+import { RestoreComponent } from './restore/restore.component';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAnAVo8J_rGWUOpsqMn6e7KcHEEesjNLls',
@@ -55,6 +56,7 @@ const firebaseConfig = {
     ItemDetailListComponent,
     OwnerComponent,
     LoadingComponent,
+    RestoreComponent,
   ],
   providers: [],
   bootstrap: [AppComponent]

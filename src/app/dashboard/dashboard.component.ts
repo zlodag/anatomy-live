@@ -8,6 +8,17 @@ import { saveAs } from 'file-saver/FileSaver';
 import 'rxjs/add/operator/first';
 import { database } from 'firebase';
 
+interface BackupObject {
+  regions: any;
+  items: any;
+  details: any;
+  images: any;
+}
+
+interface FileReaderEventTarget extends EventTarget {
+    result: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -21,6 +32,8 @@ export class DashboardComponent {
     public ownerService: OwnerService
     ) { }
 
+  selectedFile: File = null;
+
   backup() {
     this.auth.authState.first().subscribe(user => {
       if (user) {
@@ -30,12 +43,13 @@ export class DashboardComponent {
           this.db.database.ref('details').child(user.uid).once('value'),
           this.db.database.ref('images').child(user.uid).once('value'),
         ]).then(([regions, items, details, images]) => {
-            const json = JSON.stringify({
+            const backupObject: BackupObject = {
               regions: regions.val(),
               items: items.val(),
               details: details.val(),
               images: images.val(),
-            });
+            };
+            const json = JSON.stringify(backupObject);
             const blob = new Blob([json], { type: 'application/json' });
             const now = new Date();
             saveAs(blob, `backup-${now.toISOString()}.json`);
@@ -43,4 +57,42 @@ export class DashboardComponent {
       }
     });
   }
+
+  fileSelected(files: FileList) {
+    this.selectedFile = files.length ? files[0] : null;
+  }
+
+  restore() {
+    const file = this.selectedFile;
+    if (file) {
+      this.auth.authState.first().subscribe(user => {
+        if (user) {
+          const reader = new FileReader();
+          reader.onload = event => {
+            const json = (<FileReaderEventTarget>event.target).result;
+            const backupObject: BackupObject = JSON.parse(json);
+            if (confirm('All existing data will be deleted')) {
+              const updateObject = {
+                [`regions/${user.uid}`]: backupObject.regions,
+                [`items/${user.uid}`]: backupObject.items,
+                [`details/${user.uid}`]: backupObject.details,
+                [`images/${user.uid}`]: backupObject.images,
+              };
+              this.db.database.ref().update(updateObject, error => {
+                if (error) {
+                  // alert(error.message);
+                  console.error(error.message);
+                } else {
+                  alert('Successfully restored from backup file');
+                }
+              });
+            }
+          };
+          reader.readAsText(file);
+        }
+      });
+      // this.selectedFile = null;
+    }
+  }
+
 }
