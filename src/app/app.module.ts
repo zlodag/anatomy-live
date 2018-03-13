@@ -5,6 +5,7 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireStorageModule } from 'angularfire2/storage';
+import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -22,21 +23,12 @@ import { ItemDetailListComponent } from './item-detail-list/item-detail-list.com
 import { OwnerComponent } from './owner/owner.component';
 import { LoadingComponent } from './loading/loading.component';
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyAnAVo8J_rGWUOpsqMn6e7KcHEEesjNLls',
-  authDomain: 'anatomy-live.firebaseapp.com',
-  databaseURL: 'https://anatomy-live.firebaseio.com',
-  projectId: 'anatomy-live',
-  storageBucket: 'anatomy-live.appspot.com',
-  messagingSenderId: '385016421303'
-};
-
 @NgModule({
   imports: [
     BrowserModule,
     FormsModule,
     AppRoutingModule,
-    AngularFireModule.initializeApp(firebaseConfig),
+    AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule,
     AngularFireDatabaseModule,
     AngularFireStorageModule,
