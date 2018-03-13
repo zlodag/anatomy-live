@@ -3,19 +3,12 @@ import { ActivatedRoute } from '@angular/router';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { OwnerService } from '../owner.service';
-// import { saveAs } from 'file-saver/FileSaver';
+import { saveAs } from 'file-saver/FileSaver';
 import 'rxjs/add/operator/first';
+import 'rxjs/add/observable/empty';
+import { Observable } from 'rxjs/Observable';
 import { database } from 'firebase';
-
-// interface BackupObject {
-//   regions: any;
-//   items: any;
-//   details: any;
-// }
-//
-// interface FileReaderEventTarget extends EventTarget {
-//     result: string;
-// }
+import { RestoreObject } from '../models';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,76 +23,51 @@ export class DashboardComponent {
     public ownerService: OwnerService
     ) { }
 
-  // selectedFile: File = null;
+  restoreTimestamp = this.auth.authState.switchMap(user => user ?
+    this.db.object(this.db.database.ref('backup').child(user.uid).child('timestamp')).valueChanges() :
+    Observable.empty()
+  );
 
-  restoreTimestamp = this.auth.authState
-    .switchMap(user => this.db.object(this.db.database.ref('backup').child(user.uid).child('timestamp')).valueChanges());
+  private getRestoreObject(uid: string): Promise<RestoreObject> {
+    return Promise.all<database.DataSnapshot, database.DataSnapshot, database.DataSnapshot>([
+      this.db.database.ref('regions').child(uid).once('value'),
+      this.db.database.ref('items').child(uid).once('value'),
+      this.db.database.ref('details').child(uid).once('value'),
+    ]).then(([regions, items, details]) => ({
+      regions: regions.val(),
+      items: items.val(),
+      details: details.val(),
+    }));
+  }
 
-  backup() {
-    if (confirm('Any existing backup will be overwritten')) {
+  backupToServer() {
+    if (confirm('Any existing backup on the server will be overwritten')) {
       this.auth.authState.first().subscribe(user => {
         if (user) {
-          Promise.all<database.DataSnapshot, database.DataSnapshot, database.DataSnapshot>([
-            this.db.database.ref('regions').child(user.uid).once('value'),
-            this.db.database.ref('items').child(user.uid).once('value'),
-            this.db.database.ref('details').child(user.uid).once('value'),
-          ]).then(([regions, items, details]) => {
-              this.db.database.ref('backup').child(user.uid).set({
-                regions: regions.val(),
-                items: items.val(),
-                details: details.val(),
-                timestamp: database.ServerValue.TIMESTAMP,
-              });
-
-              // const backupObject: BackupObject = {
-              //   regions: regions.val(),
-              //   items: items.val(),
-              //   details: details.val(),
-              // };
-              // const json = JSON.stringify(backupObject);
-              // const blob = new Blob([json], { type: 'application/json' });
-              // const now = new Date();
-              // saveAs(blob, `backup-${now.toISOString()}.json`);
-          });
+          this.getRestoreObject(user.uid).then(restoreObject =>
+            this.db.database.ref('backup').child(user.uid).set({
+              regions: restoreObject.regions,
+              items: restoreObject.items,
+              details: restoreObject.details,
+              timestamp: database.ServerValue.TIMESTAMP,
+            })
+          );
         }
       });
     }
   }
 
-  // fileSelected(files: FileList) {
-  //   this.selectedFile = files.length ? files[0] : null;
-  // }
-
-  // restore() {
-  //   const file = this.selectedFile;
-  //   if (file) {
-  //     this.auth.authState.first().subscribe(user => {
-  //       if (user) {
-  //         const reader = new FileReader();
-  //         reader.onload = event => {
-  //           const json = (<FileReaderEventTarget>event.target).result;
-  //           const backupObject: BackupObject = JSON.parse(json);
-  //           if (confirm('All existing data will be deleted')) {
-  //             const updateObject = {
-  //               [`regions/${user.uid}`]: backupObject.regions,
-  //               [`items/${user.uid}`]: backupObject.items,
-  //               [`details/${user.uid}`]: backupObject.details,
-  //             };
-  //             this.db.database.ref().update(updateObject, error => {
-  //               if (error) {
-  //                 // alert(error.message);
-  //                 console.error(error.message);
-  //               } else {
-  //                 alert('Successfully restored from backup file');
-  //               }
-  //             });
-  //           }
-  //         };
-  //         reader.readAsText(file);
-  //       }
-  //     });
-  //     // this.selectedFile = null;
-  //   }
-  // }
+  backupToFile() {
+    this.auth.authState.first().subscribe(user => {
+      if (user) {
+        this.getRestoreObject(user.uid).then(restoreObject => {
+          const json = JSON.stringify(restoreObject);
+          const blob = new Blob([json], { type: 'application/json' });
+          const now = new Date();
+          saveAs(blob, `backup-${now.toISOString()}.json`);
+        });
+      }
+    });
+  }
 
 }

@@ -1,0 +1,13 @@
+<app-breadcrumbs></app-breadcrumbs>
+<app-backup
+  *ngIf="regions; else upload"
+  title="File backup"
+  [regions]="regions"
+  [restoreObject]="restoreObject"
+  ></app-backup>
+<ng-template #upload>
+  <div class="custom-file">
+    <input type="file" class="custom-file-input" accept="application/json" id="file_upload" (change)="fileSelected($event.target.files)">
+    <label class="custom-file-label" for="file_upload">Choose file</label>
+  </div>
+</ng-template>

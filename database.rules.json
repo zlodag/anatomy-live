@@ -10,13 +10,22 @@
     },
     "regions" : {
       "$uid": {
-        ".indexOn": ".value",
+        ".indexOn": "timestamp",
         ".read" : true,
         ".write": "auth != null && auth.uid == $uid && (!data.exists() || (!newData.exists() && !newData.parent().parent().child('items').hasChild($uid)))",
         ".validate": "newData.hasChildren() && newData.parent().parent().child('users').hasChild($uid)",
         "$regionId": {
           ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).exists() && (newData.exists() || !root.child('items').child($uid).child($regionId).exists())",
-          ".validate": "newData.isString() && newData.val().length != 0"
+          ".validate": "newData.hasChildren(['name', 'timestamp'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length != 0"
+          },
+          "timestamp": {
+            ".validate": "data.exists() || !data.parent().parent().exists() || newData.val() == now"
+          },
+          "$other": {
+            ".validate": false
+          }
         }
       }
     },
@@ -26,11 +35,20 @@
         ".write": "auth != null && auth.uid == $uid && (!data.exists() || (!newData.exists() && !newData.parent().parent().child('details').hasChild($uid)))",
         ".validate": "newData.hasChildren() && newData.parent().parent().child('regions').hasChild($uid)",
         "$regionId": {
-          ".indexOn": ".value",
+          ".indexOn": "timestamp",
           ".validate": "newData.hasChildren() && newData.parent().parent().parent().child('regions').child($uid).hasChild($regionId)",
           "$itemId": {
             ".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || !root.child('details').child($uid).child($regionId).child($itemId).exists())",
-            ".validate": "newData.isString() && newData.val().length != 0"
+            ".validate": "newData.hasChildren(['name', 'timestamp'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length != 0"
+            },
+            "timestamp": {
+              ".validate": "data.exists() || !data.parent().parent().parent().exists() || newData.val() == now"
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         }
       }

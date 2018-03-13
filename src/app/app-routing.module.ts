@@ -4,11 +4,11 @@ import { UserListComponent } from './user-list/user-list.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { OwnerComponent } from './owner/owner.component';
-import { BackupComponent } from './backup/backup.component';
+import { ServerBackupComponent, FileBackupComponent } from './backup/backup.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
-import { UserNameResolver, RegionNameResolver, ItemNameResolver, BackupDataResolver } from './resolvers.service';
+import { UserNameResolver, RegionNameResolver, ItemNameResolver, ServerBackupResolver } from './resolvers.service';
 
 const appRoutes: Routes = [
   {
@@ -27,10 +27,17 @@ const appRoutes: Routes = [
         component: DashboardComponent,
       },
       {
-        path: 'backup',
-        component: BackupComponent,
+        path: 'server-backup',
+        component: ServerBackupComponent,
         resolve: {
-          backupData: BackupDataResolver
+          serverBackup: ServerBackupResolver
+        }
+      },
+      {
+        path: 'file-backup',
+        component: FileBackupComponent,
+        data: {
+          fileBackup: true
         }
       },
       {
@@ -96,7 +103,7 @@ const appRoutes: Routes = [
     UserNameResolver,
     RegionNameResolver,
     ItemNameResolver,
-    BackupDataResolver,
+    ServerBackupResolver,
   ],
   exports: [
     RouterModule

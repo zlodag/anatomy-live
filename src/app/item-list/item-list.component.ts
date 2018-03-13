@@ -8,6 +8,7 @@ import { OwnerService } from '../owner.service';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/first';
+import 'rxjs/add/observable/empty';
 
 interface Item {
   key: string;
@@ -41,12 +42,16 @@ export class ItemListComponent {
 
   copyCount: number;
 
-  private itemsList = this.db.list(this.db.database.ref('items').child(this.ownerId).child(this.regionId), ref => ref.orderByValue());
+  private itemsList = this.db.list(
+    this.db.database.ref('items').child(this.ownerId).child(this.regionId),
+    ref => ref.orderByChild('timestamp')
+  );
 
   items: Observable<Item[]> = this.itemsList.snapshotChanges()
     .map(actions => actions.map(a => ({
         key: a.key,
-        name: a.payload.val(),
+        name: a.payload.child('name').val(),
+        timestamp: a.payload.child('timestamp').val(),
         copy: true,
       })))
     .do(items => this.copyCount = items.length);
@@ -57,20 +62,24 @@ export class ItemListComponent {
 
   myRegions: Observable<Region[]> = this.auth.authState
     .switchMap<User, AngularFireAction<database.DataSnapshot>[]>(user => user ?
-      this.db.list(this.db.database.ref('regions').child(user.uid)).snapshotChanges() :
-      Observable.of([]))
+      this.db.list(this.db.database.ref('regions').child(user.uid), ref => ref.orderByChild('timestamp')).snapshotChanges() :
+      Observable.empty())
     .map(action => action.map(a => ({
         key: a.key,
-        name: a.payload.val(),
+        name: a.payload.child('name').val(),
+        timestamp: a.payload.child('timestamp').val(),
       })))
     .do(regions => this.selectedRegionKey = '');
 
   add(newEntry: string) {
-    this.itemsList.push(newEntry);
+    this.itemsList.push({
+      name: newEntry,
+      timestamp: database.ServerValue.TIMESTAMP,
+    });
   }
 
   update(itemKey: string, name: string) {
-    this.itemsList.set(itemKey, name);
+    this.itemsList.query.ref.child(itemKey).child('name').set(name);
   }
 
   delete(itemKey: string) {
@@ -96,7 +105,10 @@ export class ItemListComponent {
     allItems.filter(item => item.copy).forEach(item =>
       detailsRef.child(item.key).once('value', detailsSnap => {
         const newItemId = this.db.createPushId();
-        const updateObj = {[`items/${userId}/${regionKey}/${newItemId}`]: item.name};
+        const updateObj = {[`items/${userId}/${regionKey}/${newItemId}`]: {
+          name: item.name,
+          timestamp: database.ServerValue.TIMESTAMP,
+        }};
         if (detailsSnap.exists()) {
           updateObj[`details/${userId}/${regionKey}/${newItemId}`] = detailsSnap.val();
         }
@@ -118,7 +130,10 @@ export class ItemListComponent {
     this.auth.authState.first().subscribe(user => {
       if (user) {
         const ref = this.db.database.ref('regions').child(user.uid).push();
-        ref.set(regionName, (error: FirebaseError) => {
+        ref.set({
+          name: regionName,
+          timestamp: database.ServerValue.TIMESTAMP,
+        }, (error: FirebaseError) => {
           if (error) {
             if (error.code === 'PERMISSION_DENIED') {
               alert('Set your profile name first');

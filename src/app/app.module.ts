@@ -9,7 +9,7 @@ import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { BackupComponent } from './backup/backup.component';
+import { BackupComponent, ServerBackupComponent, FileBackupComponent } from './backup/backup.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
@@ -37,6 +37,8 @@ import { LoadingComponent } from './loading/loading.component';
     AppComponent,
     DashboardComponent,
     BackupComponent,
+    ServerBackupComponent,
+    FileBackupComponent,
     RegionListComponent,
     ItemListComponent,
     ItemDetailComponent,

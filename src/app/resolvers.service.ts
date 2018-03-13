@@ -34,7 +34,7 @@ export class RegionNameResolver implements Resolve<string> {
     const
     userId = route.paramMap.get('userId'),
     regionId = route.paramMap.get('regionId');
-    return this.db.database.ref('regions').child(userId).child(regionId).once('value')
+    return this.db.database.ref('regions').child(userId).child(regionId).child('name').once('value')
     .then(snap => {
       if (snap.exists()) {
         return snap.val();
@@ -57,7 +57,7 @@ export class ItemNameResolver implements Resolve<string> {
     userId = route.paramMap.get('userId'),
     regionId = route.paramMap.get('regionId'),
     itemId = route.paramMap.get('itemId');
-    return this.db.database.ref('items').child(userId).child(regionId).child(itemId).once('value')
+    return this.db.database.ref('items').child(userId).child(regionId).child(itemId).child('name').once('value')
     .then(snap => {
       if (snap.exists()) {
         return snap.val();
@@ -70,7 +70,7 @@ export class ItemNameResolver implements Resolve<string> {
 }
 
 @Injectable()
-export class BackupDataResolver implements Resolve<DatabaseSnapshot> {
+export class ServerBackupResolver implements Resolve<DatabaseSnapshot> {
 
   constructor(private readonly db: AngularFireDatabase, private auth: AngularFireAuth, private router: Router) {
   }
@@ -87,6 +87,12 @@ export class BackupDataResolver implements Resolve<DatabaseSnapshot> {
           this.router.navigate(['/']);
         }
       })
-      .switchMap(user => this.db.database.ref('backup').child(user.uid).once('value'));
+      .switchMap(user => this.db.database.ref('backup').child(user.uid).once('value'))
+      .do(serverBackup => {
+        if (!serverBackup) {
+          console.error(`No server backup exists`);
+          this.router.navigate(['/', userId]);
+        }
+      });
   }
 }

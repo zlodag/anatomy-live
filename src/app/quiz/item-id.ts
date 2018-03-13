@@ -23,11 +23,11 @@ export abstract class IdSubject extends Subject<Item> {
 export class ItemSubject extends IdSubject {
   constructor(db: AngularFireDatabase, user: string, regionKey: string, itemKey: string) {
     super();
-    itemRef(db, user, regionKey, itemKey).once('value', itemSnap => {
+    itemRef(db, user, regionKey, itemKey).child('name').once('value', itemSnap => {
       this.items = [{
         regionKey: regionKey,
-        itemKey: itemSnap.key,
-        itemName: itemSnap.val()
+        itemKey: itemKey,
+        itemName: itemSnap.val(),
       }];
       this.nextItem();
     });
@@ -43,7 +43,7 @@ export class RegionSubject extends IdSubject {
         this.items.push({
           regionKey: regionKey,
           itemKey: itemSnap.key,
-          itemName: itemSnap.val()
+          itemName: itemSnap.child('name').val(),
         });
         return false;
       });
@@ -63,8 +63,8 @@ export class AllRegionsSubject extends IdSubject {
         regionSnap.forEach(itemSnap => {
           this.items.push({
             regionKey: regionKey,
-          itemKey: itemSnap.key,
-            itemName: itemSnap.val()
+            itemKey: itemSnap.key,
+            itemName: itemSnap.child('name').val(),
           });
           return false;
         });

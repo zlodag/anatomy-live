@@ -57,10 +57,15 @@ export class BreadcrumbsComponent implements OnInit {
             });
           }
         }
-      } else if (this.route.snapshot.data.backupData) {
+      } else if (this.route.snapshot.data.serverBackup) {
         this.crumbs.push({
-          label: 'Backup',
-          routerLink: ['/', userId, 'backup']
+          label: 'Server Backup',
+          routerLink: ['/', userId, 'server-backup']
+        });
+      } else if (this.route.snapshot.data.fileBackup) {
+        this.crumbs.push({
+          label: 'File Backup',
+          routerLink: ['/', userId, 'file-backup']
         });
       } else if (this.quiz) {
         this.crumbs.push({

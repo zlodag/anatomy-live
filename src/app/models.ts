@@ -39,3 +39,9 @@ export interface EntryProgress {
 export interface Progress {
   [key: string]: EntryProgress[];
 }
+
+export interface RestoreObject {
+  regions: any;
+  items: any;
+  details: any;
+}

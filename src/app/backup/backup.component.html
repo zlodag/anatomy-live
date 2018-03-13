@@ -1,6 +1,5 @@
-<app-breadcrumbs></app-breadcrumbs>
 <button type="button" class="btn float-right btn-danger btn-sm" (click)="restore()">Restore from this backup</button>
-<h3>Backup from {{ backupData.child('timestamp').val() | date: 'full' }}</h3>
+<h3>{{ title }}</h3>
 <ul>
 	<li *ngFor="let region of regions">
 		<h4>{{ region.text }}</h4>
