@@ -10,6 +10,7 @@
 		[fields]="details.fields"
 		(set)="set($event.field, $event.entryKey, $event.entry)"
 		(remove)="remove($event.field, $event.entryKey)"
+		(swap)="swap($event.field, $event.entry1, $event.entry2)"
 		></app-item-detail-list>
 	<div *ngIf="ownerService.owner && ownerService.edit" class="form-row">
 		<div class="form-group col-md-3 col-lg-2">

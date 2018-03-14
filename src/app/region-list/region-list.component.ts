@@ -5,6 +5,12 @@ import { Observable } from 'rxjs/Observable';
 import { OwnerService } from '../owner.service';
 import { database } from 'firebase';
 
+interface Region {
+  key: string;
+  name: string;
+  timestamp: number;
+}
+
 @Component({
   selector: 'app-region-list',
   templateUrl: './region-list.component.html',
@@ -18,7 +24,7 @@ export class RegionListComponent {
     ref => ref.orderByChild('timestamp')
   );
 
-  regions = this.regionList.snapshotChanges()
+  regions: Observable<Region[]> = this.regionList.snapshotChanges()
     .map(actions => actions.map(a => ({
       key: a.key,
       name: a.payload.child('name').val(),
@@ -41,6 +47,13 @@ export class RegionListComponent {
       if (error.code === 'PERMISSION_DENIED') {
         alert('Region is not empty');
       }
+    });
+  }
+
+  swap(a: Region, b: Region) {
+    this.regionList.query.ref.update({
+      [`${a.key}/timestamp`]: b.timestamp,
+      [`${b.key}/timestamp`]: a.timestamp,
     });
   }
 

@@ -8,13 +8,25 @@ export class EditStringComponent implements OnChanges {
 
   constructor() { }
 
+  @Input() small = false;
+
   @Input() label: string;
 
   @Input() text: string;
 
+  @Input() showMoveControls = false;
+
+  @Input() disableMoveUp = false;
+
+  @Input() disableMoveDown = false;
+
   @Output() update = new EventEmitter<string>();
 
   @Output() delete = new EventEmitter<void>();
+
+  @Output() moveUp = new EventEmitter<void>();
+
+  @Output() moveDown = new EventEmitter<void>();
 
   newString: string;
 

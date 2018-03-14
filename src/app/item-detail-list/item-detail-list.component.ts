@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Field } from '../models';
+import { Field, Entry } from '../models';
 
 @Component({
   selector: 'app-item-detail-list',
@@ -20,6 +20,12 @@ export class ItemDetailListComponent {
   @Output() remove = new EventEmitter<{
     field: string;
     entryKey: string;
+  }>();
+
+  @Output() swap = new EventEmitter<{
+    field: string;
+    entry1: Entry;
+    entry2: Entry;
   }>();
 
 }

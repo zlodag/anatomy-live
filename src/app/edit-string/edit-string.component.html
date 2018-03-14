@@ -1,11 +1,15 @@
-<form #updateForm="ngForm" (ngSubmit)="updateValue()" class="my-3">
-	<div class="form-group">
-		<div class="input-group">
-		  <input type="text" name="value" class="form-control" [(ngModel)]="newString" [placeholder]="label" required>
-		  <div class="input-group-append">
-		    <button class="btn btn-outline-info" type="submit" [disabled]="!updateForm.form.valid || !validText()">Update</button>
-		    <button class="btn btn-outline-danger" type="button" (click)="delete.emit()">Remove</button>
-		  </div>
-		</div>
-	</div>
+<form #updateForm="ngForm" (ngSubmit)="updateValue()">
+  <div class="form-group" [ngClass]="{'form-group': !small}">
+    <div class="input-group" [ngClass]="{'input-group-sm': small}">
+      <div class="input-group-prepend">
+        <button *ngIf="showMoveControls" class="btn btn-outline-primary" type="button" [disabled]="disableMoveUp" (click)="moveUp.emit()">&#8593;</button>
+        <button *ngIf="showMoveControls" class="btn btn-outline-primary" type="button" [disabled]="disableMoveDown" (click)="moveDown.emit()">&#8595;</button>
+      </div>
+      <input type="text" name="value" class="form-control" [(ngModel)]="newString" [placeholder]="label" required>
+      <div class="input-group-append">
+        <button class="btn btn-outline-info" type="submit" [disabled]="!updateForm.form.valid || !validText()">Update</button>
+        <button class="btn btn-outline-danger" type="button" (click)="delete.emit()">Remove</button>
+      </div>
+    </div>
+  </div>
 </form>

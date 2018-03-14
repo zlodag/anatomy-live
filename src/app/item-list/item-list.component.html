@@ -8,11 +8,16 @@
 <div *ngIf="items | async as items; else loading">
 	<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
 		<app-edit-string
-			*ngFor="let item of items"
+			*ngFor="let item of items; index as i; first as isFirst; last as isLast"
 			label="Item"
 			[text]="item.name"
 			(update)="update(item.key, $event)"
 			(delete)="delete(item.key)"
+			[showMoveControls]="true"
+			[disableMoveUp]="isFirst"
+			[disableMoveDown]="isLast"
+			(moveUp)="swap(items[i-1], item)"
+			(moveDown)="swap(item, items[i+1])"
 			></app-edit-string>
 		<app-add-string label="Item" (newString)="add($event)"></app-add-string>
 	</div>

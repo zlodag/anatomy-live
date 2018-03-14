@@ -20,7 +20,7 @@ export const DETAIL_FIELDS: FieldSpec[] = [
   {key: 'Variants', shortcut: 'va'},
 ];
 
-interface Entry {
+export interface Entry {
   key: string;
   text: string;
 }

@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireStorage } from 'angularfire2/storage';
 import { Observable } from 'rxjs/Observable';
-import { DETAIL_FIELDS, Field } from '../models';
+import { DETAIL_FIELDS, Field, Entry } from '../models';
 import { OwnerService } from '../owner.service';
 import 'rxjs/add/operator/map';
 import { storage as fBstorage, FirebaseError } from 'firebase';
@@ -83,54 +83,6 @@ export class ItemDetailComponent {
           images: images,
         };
       });
-  //     DETAIL_FIELDS.forEach(detailField => {
-  //       if (action.payload.child('fields').hasChild(detailField.key)) {
-  //         const field: Field = {
-  //           key: detailField.key,
-  //           entries: []
-  //         };
-  //         action.payload.child(detailField.key).forEach(snap => {
-  //           field.entries.push({
-  //             key: snap.key,
-  //             text: snap.val()
-  //           });
-  //           return false;
-  //         });
-  //         fields.push(field);
-  //       }
-  //     });
-  //     return details;
-  //   });
-
-  // images: Observable<Image[]> = this.db.list(this.imagesRef, ref => ref.orderByKey())
-  //   .snapshotChanges()
-  //   .map(action => action.map(a => ({
-  //     key: a.key,
-  //     url: a.payload.child('url').val(),
-  //     filename: a.payload.child('filename').val()
-  //   })));
-  // fields: Observable<Field[]> = this.db.object(this.fieldsRef)
-  //   .snapshotChanges()
-  //   .map(action => {
-  //     const fields: Field[] = [];
-  //     DETAIL_FIELDS.forEach(detailField => {
-  //       if (action.payload.hasChild(detailField.key)) {
-  //         const field: Field = {
-  //           key: detailField.key,
-  //           entries: []
-  //         };
-  //         action.payload.child(detailField.key).forEach(snap => {
-  //           field.entries.push({
-  //             key: snap.key,
-  //             text: snap.val()
-  //           });
-  //           return false;
-  //         });
-  //         fields.push(field);
-  //       }
-  //     });
-  //     return fields;
-  //   });
 
   add(field: string, entry: string) {
     this.detailsRef.child('fields').child(field).push(entry);
@@ -142,6 +94,13 @@ export class ItemDetailComponent {
 
   remove(field: string, entryKey: string) {
     this.detailsRef.child('fields').child(field).child(entryKey).remove();
+  }
+
+  swap(field: string, entry1: Entry, entry2: Entry) {
+    this.detailsRef.child('fields').child(field).update({
+      [entry1.key]: entry2.text,
+      [entry2.key]: entry1.text,
+    });
   }
 
   fileSelected(files: FileList) {

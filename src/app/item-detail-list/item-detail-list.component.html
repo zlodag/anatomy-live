@@ -2,18 +2,20 @@
     <li *ngFor="let field of fields" class="list-group-item">
         <h5>{{ field.key }}</h5>
         <ul class="list-unstyled">
-            <li *ngFor="let entry of field.entries">
-            	<form *ngIf="edit; else noEdit" #updateForm="ngForm" (ngSubmit)="set.emit({field: field.key, entryKey: entry.key, entry: updateForm.value.updatedValue})">
-					<div class="form-group">
-						<div class="input-group input-group-sm">
-						  <input name="updatedValue" type="text" class="form-control" [ngModel]="entry.text" [placeholder]="field.key" required>
-						  <div class="input-group-append">
-						    <button class="btn btn-outline-info" type="submit" [disabled]="!updateForm.form.valid || !updateForm.value.updatedValue || !updateForm.value.updatedValue.trim().length || updateForm.value.updatedValue.trim() === entry.text">Update</button>
-						    <button class="btn btn-outline-danger" type="button" (click)="remove.emit({field: field.key, entryKey: entry.key})">Remove</button>
-						  </div>
-						</div>
-					</div>
-				</form>
+            <li *ngFor="let entry of field.entries; index as i; first as isFirst; last as isLast">
+				<app-edit-string
+					*ngIf="edit; else noEdit"
+					[small]="true"
+					[label]="field.key"
+					[text]="entry.text"
+					(update)="set.emit({field: field.key, entryKey: entry.key, entry: $event})"
+					(delete)="remove.emit({field: field.key, entryKey: entry.key})"
+					[showMoveControls]="true"
+					[disableMoveUp]="isFirst"
+					[disableMoveDown]="isLast"
+					(moveUp)="swap.emit({field: field.key, entry1: field.entries[i-1], entry2: entry})"
+					(moveDown)="swap.emit({field: field.key, entry1: entry, entry2: field.entries[i+1]})"
+					></app-edit-string>
 				<ng-template #noEdit>{{ entry.text }}</ng-template>
             </li>
         </ul>

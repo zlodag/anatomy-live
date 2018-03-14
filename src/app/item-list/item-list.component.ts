@@ -14,6 +14,7 @@ interface Item {
   key: string;
   name: string;
   copy: boolean;
+  timestamp: number;
 }
 
 interface Region {
@@ -145,6 +146,13 @@ export class ItemListComponent {
           }
         });
       }
+    });
+  }
+
+  swap(a: Item, b: Item) {
+    this.itemsList.query.ref.update({
+      [`${a.key}/timestamp`]: b.timestamp,
+      [`${b.key}/timestamp`]: a.timestamp,
     });
   }
 

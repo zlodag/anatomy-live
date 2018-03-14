@@ -7,11 +7,16 @@
 <div *ngIf="regions | async as regions; else loading">
 	<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
 		<app-edit-string
-			*ngFor="let region of regions"
+			*ngFor="let region of regions; index as i; first as isFirst; last as isLast"
 			label="Region"
 			[text]="region.name"
 			(update)="update(region.key, $event)"
 			(delete)="delete(region.key)"
+			[showMoveControls]="true"
+			[disableMoveUp]="isFirst"
+			[disableMoveDown]="isLast"
+			(moveUp)="swap(regions[i-1], region)"
+			(moveDown)="swap(region, regions[i+1])"
 			></app-edit-string>
 		<app-add-string label="Region" (newString)="add($event)"></app-add-string>
 	</div>
