@@ -1,0 +1,44 @@
+<app-breadcrumbs></app-breadcrumbs>
+<app-edit-button></app-edit-button>
+<h4 class="text-center my-3">{{ nodeName | async }}</h4>
+<div class="row">
+	<div class="col-md-6">
+		<app-node-link-list
+			[to]="false"
+			(delete)="update($event, false, false)"
+			></app-node-link-list>
+	</div>
+	<div class="col-md-6">
+		<app-node-link-list
+			[to]="true"
+			(delete)="update($event, true, false)"
+			></app-node-link-list>
+	</div>
+</div>
+<div *ngIf="ownerService.owner && ownerService.edit" class="form-inline">
+	<label class="mr-2">New link</label>
+	<div class="form-check form-check-inline">
+		<input class="form-check-input" type="radio" id="forRadio" [value]="false" [(ngModel)]="selectedTo" />
+		<label class="form-check-label" for="forRadio">From</label>
+	</div>
+	<div class="form-check form-check-inline">
+		<input class="form-check-input" type="radio" id="toRadio" [value]="true" [(ngModel)]="selectedTo" />
+		<label class="form-check-label" for="toRadio">To</label>
+	</div>
+	<select [(ngModel)]="selectedNode" class="form-control mr-2">
+		<option value="">New node</option>
+		<option *ngFor="let node of nodes | async" [value]="node.key">{{ node.name }}</option>
+	</select>
+	<input
+		*ngIf="!selectedNode"
+		type="text"
+		class="form-control mr-2"
+		[(ngModel)]="newNodeName"
+		placeholder="Node" />
+	<button
+		class="btn btn-outline-success"
+		type="button"
+		[disabled]="!selectedNode && !newNodeName.trim().length"
+		(click)="selectedNode ? update(selectedNode, selectedTo, true) : linkToNew(newNodeName.trim(), selectedTo)"
+		>Add</button>
+</div>

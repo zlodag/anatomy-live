@@ -22,6 +22,11 @@ import { EditStringComponent } from './edit-string/edit-string.component';
 import { ItemDetailListComponent } from './item-detail-list/item-detail-list.component';
 import { OwnerComponent } from './owner/owner.component';
 import { LoadingComponent } from './loading/loading.component';
+import { DragDropUploadComponent } from './drag-drop-upload/drag-drop-upload.component';
+import { DragDropUploadDirective } from './drag-drop-upload/drag-drop-upload.directive';
+import { CoursesComponent } from './courses/courses.component';
+import { NodeDetailComponent } from './node-detail/node-detail.component';
+import { NodeLinkListComponent } from './node-link-list/node-link-list.component';
 
 @NgModule({
   imports: [
@@ -51,6 +56,11 @@ import { LoadingComponent } from './loading/loading.component';
     ItemDetailListComponent,
     OwnerComponent,
     LoadingComponent,
+    DragDropUploadComponent,
+    DragDropUploadDirective,
+    CoursesComponent,
+    NodeDetailComponent,
+    NodeLinkListComponent,
   ],
   providers: [],
   bootstrap: [AppComponent]

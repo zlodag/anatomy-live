@@ -97,6 +97,39 @@
         }
       },
     },
+    "nodes": {
+      "$uid": {
+        ".read": "true",
+        "$nodeId": {
+          ".write": "auth != null && auth.uid == $uid && (newData.exists() || (!root.child('from').child($uid).hasChild($nodeId) && !root.child('to').child($uid).hasChild($nodeId)))",
+          ".validate": "newData.isString() && newData.val().length != 0"
+        }
+      }
+    },
+    "from": {
+      "$uid": {
+        "$nodeId": {
+          ".read": "true",
+          ".validate": "root.child('nodes').child($uid).hasChild($nodeId)",
+          "$otherNodeId": {
+            ".write": "auth != null && auth.uid == $uid && newData.exists() == newData.parent().parent().parent().parent().child('to').child($uid).child($otherNodeId).hasChild($nodeId)",
+            ".validate": "root.child('nodes').child($uid).hasChild($otherNodeId) && (data.exists() || newData.val() == now)"
+          }
+        }
+      }
+    },
+    "to": {
+      "$uid": {
+        "$nodeId": {
+          ".read": "true",
+          ".validate": "root.child('nodes').child($uid).hasChild($nodeId)",
+          "$otherNodeId": {
+            ".write": "auth != null && auth.uid == $uid && newData.exists() == newData.parent().parent().parent().parent().child('from').child($uid).child($otherNodeId).hasChild($nodeId)",
+            ".validate": "root.child('nodes').child($uid).hasChild($otherNodeId) && (data.exists() || newData.val() == now)"
+          }
+        }
+      }
+    },
     "backup": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",

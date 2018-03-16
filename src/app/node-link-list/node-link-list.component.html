@@ -1,0 +1,25 @@
+<div class="card">
+	<h5 class="card-header text-center">{{ to ? 'To' : 'From' }}</h5>
+	<div *ngIf="nodes | async as nodes; else loading">
+		<div *ngIf="ownerService.owner && ownerService.edit; else noEdit" class="card-body">
+			<app-edit-string
+				*ngFor="let node of nodes; index as i; first as isFirst; last as isLast"
+				[small]="true"
+				[text]="node.name"
+				(delete)="delete.emit(node.key)"
+				[showEditTextControls]="false"
+				[showMoveControls]="true"
+				[disableMoveUp]="isFirst"
+				[disableMoveDown]="isLast"
+				(moveUp)="swap(nodes[i-1], node)"
+				(moveDown)="swap(node, nodes[i+1])"
+				></app-edit-string>
+		</div>
+		<ng-template #noEdit>
+			<div  class="list-group list-group-flush">
+				<a *ngFor="let node of nodes" [routerLink]="['..', node.key]" class="list-group-item list-group-item-action text-center">{{ node.name }}</a>
+			</div>
+		</ng-template>
+	</div>
+	<ng-template #loading><div class="card-body text-center"><app-loading></app-loading></div></ng-template>
+</div>

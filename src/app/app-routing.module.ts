@@ -8,6 +8,8 @@ import { ServerBackupComponent, FileBackupComponent } from './backup/backup.comp
 import { RegionListComponent } from './region-list/region-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { ItemDetailComponent } from './item-detail/item-detail.component';
+import { CoursesComponent } from './courses/courses.component';
+import { NodeDetailComponent } from './node-detail/node-detail.component';
 import { UserNameResolver, RegionNameResolver, ItemNameResolver, ServerBackupResolver } from './resolvers.service';
 
 const appRoutes: Routes = [
@@ -85,6 +87,22 @@ const appRoutes: Routes = [
                 ]
               }
             ]
+          }
+        ]
+      },
+      {
+        path: 'courses',
+        data: {
+          courses: true
+        },
+        children: [
+          {
+            path: '',
+            component: CoursesComponent
+          },
+          {
+            path: ':nodeId',
+            component: NodeDetailComponent
           }
         ]
       }

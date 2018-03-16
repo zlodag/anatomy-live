@@ -57,6 +57,18 @@ export class BreadcrumbsComponent implements OnInit {
             });
           }
         }
+      } else if (this.route.snapshot.data.courses) {
+        this.crumbs.push({
+          label: 'Courses',
+          routerLink: ['/', userId, 'courses']
+        });
+        if (this.route.snapshot.paramMap.has('nodeId')) {
+          const nodeId = this.route.snapshot.paramMap.get('nodeId');
+          this.crumbs.push({
+            label: 'Nodes',
+            routerLink: null
+          });
+        }
       } else if (this.route.snapshot.data.serverBackup) {
         this.crumbs.push({
           label: 'Server Backup',

@@ -1,14 +1,12 @@
 <app-breadcrumbs></app-breadcrumbs>
 <h4>{{ route.snapshot.data.profileName }}</h4>
 <div class="list-group my-3">
-  <div class="list-group-item">
-    <a routerLink="regions">Regions</a>
-      <a class="badge badge-primary float-right" routerLink="quiz">Quiz</a>
-  </div>
-  <div *ngIf="ownerService.owner">
-    <button type="button" class="list-group-item list-group-item-info list-group-item-action" (click)="backupToServer()">Backup to server</button>
-    <a *ngIf="ownerService.owner && restoreTimestamp | async as timestamp" routerLink="server-backup" class="list-group-item list-group-item-warning list-group-item-action">View/restore server backup ({{ timestamp | date: 'full' }})</a>
-    <button type="button" class="list-group-item list-group-item-info list-group-item-action" (click)="backupToFile()">Backup to file</button>
-    <a *ngIf="ownerService.owner" routerLink="file-backup" class="list-group-item list-group-item-warning list-group-item-action">View/restore file backup</a>
-  </div>
+  <a routerLink="regions" class="list-group-item list-group-item-action">Regions</a>
+  <a routerLink="courses" class="list-group-item list-group-item-action">Courses</a>
+</div>
+<div class="list-group my-3" *ngIf="ownerService.owner">
+  <button type="button" class="list-group-item list-group-item-info list-group-item-action" (click)="backupToServer()">Backup to server</button>
+  <a *ngIf="restoreTimestamp | async as timestamp" routerLink="server-backup" class="list-group-item list-group-item-warning list-group-item-action">View/restore server backup ({{ timestamp | date: 'full' }})</a>
+  <button type="button" class="list-group-item list-group-item-info list-group-item-action" (click)="backupToFile()">Backup to file</button>
+  <a routerLink="file-backup" class="list-group-item list-group-item-warning list-group-item-action">View/restore file backup</a>
 </div>

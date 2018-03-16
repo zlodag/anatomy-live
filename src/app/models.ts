@@ -45,3 +45,13 @@ export interface RestoreObject {
   items: any;
   details: any;
 }
+
+export interface Node {
+  key: string;
+  name: string;
+}
+
+export interface LinkNode extends Node {
+  timestamp: number;
+}
+

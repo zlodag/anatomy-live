@@ -1,0 +1,21 @@
+<app-breadcrumbs></app-breadcrumbs>
+<app-edit-button></app-edit-button>
+<h4 class="my-3">Nodes</h4>
+<div *ngIf="nodes | async as nodes; else loading">
+	<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
+		<app-edit-string
+			*ngFor="let node of nodes"
+			label="Node"
+			[text]="node.name"
+			(update)="update(node.key, $event)"
+			(delete)="delete(node.key)"
+			></app-edit-string>
+		<app-add-string label="Node" (newString)="add($event)"></app-add-string>
+	</div>
+	<ng-template #noEdit>
+		<div class="list-group my-3">
+			<a *ngFor="let node of nodes" [routerLink]="node.key" class="list-group-item list-group-item-action">{{ node.name }}</a>
+		</div>
+	</ng-template>
+</div>
+<ng-template #loading><app-loading></app-loading></ng-template>

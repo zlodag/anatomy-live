@@ -16,6 +16,8 @@ export class EditStringComponent implements OnChanges {
 
   @Input() showMoveControls = false;
 
+  @Input() showEditTextControls = true;
+
   @Input() disableMoveUp = false;
 
   @Input() disableMoveDown = false;
