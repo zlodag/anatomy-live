@@ -27,11 +27,13 @@ export class NodeLinkListComponent {
     return this.db
       .list(this.db.database.ref(this.to ? 'to' : 'from').child(userId).child(thisNodeKey), ref => ref.orderByValue())
       .snapshotChanges()
-      .switchMap(actions => Promise.all(actions.map(a => this.db.database.ref('nodes').child(userId).child(a.key).once('value').then(snap => ({
-        key: a.key,
-        name: snap.val(),
-        timestamp: a.payload.val(),
-      })))));
+      .switchMap(actions => Promise.all(actions.map(a =>
+        this.db.database.ref('nodes').child(userId).child(a.key).once('value').then(snap => ({
+          key: a.key,
+          name: snap.val(),
+          timestamp: a.payload.val(),
+        }))
+      )));
   });
 
   swap(node1: LinkNode, node2: LinkNode) {
