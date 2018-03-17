@@ -1,27 +1,37 @@
 {
   "rules": {
     "users": {
-      ".indexOn": ".value",
       ".read" : true,
+      ".indexOn": ["name"],
       "$uid": {
-        ".write": "auth != null && auth.uid == $uid && (newData.exists() || !root.child('regions').child($uid).exists())",
-        ".validate": "newData.isString() && newData.val().length != 0"
+        ".write": "auth.uid == $uid && data.exists() && !newData.exists() && !(root.child('regions').hasChild($uid) || root.child('nodes').hasChild($uid))",
+        "name": {
+          ".write": "auth.uid == $uid && newData.exists()",
+          ".validate": "newData.isString() && newData.val().length != 0"
+        },
+        "restored": {
+          ".write": "auth.uid == $uid && newData.exists() && data.parent().exists()",
+          ".validate": "newData.val() == now"
+        },
+        "$other": {
+          ".validate": false
+        }
       }
     },
     "regions" : {
       "$uid": {
-        ".indexOn": "timestamp",
         ".read" : true,
-        ".write": "auth != null && auth.uid == $uid && (!data.exists() || (!newData.exists() && !newData.parent().parent().child('items').hasChild($uid)))",
-        ".validate": "newData.hasChildren() && newData.parent().parent().child('users').hasChild($uid)",
+        ".indexOn": ["timestamp"],
+        ".write": "auth.uid == $uid && newData.parent().parent().child('users').child($uid).child('restored').val() == now",
+        ".validate": "newData.hasChildren() && root.child('users').hasChild($uid)",
         "$regionId": {
-          ".write": "auth != null && auth.uid == $uid && root.child('users').child($uid).exists() && (newData.exists() || !root.child('items').child($uid).child($regionId).exists())",
+          ".write": "auth.uid == $uid && (newData.exists() || !root.child('items').child($uid).hasChild($regionId))",
           ".validate": "newData.hasChildren(['name', 'timestamp'])",
           "name": {
             ".validate": "newData.isString() && newData.val().length != 0"
           },
           "timestamp": {
-            ".validate": "data.exists() || !data.parent().parent().exists() || newData.val() == now"
+            ".validate": "newData.isNumber()"
           },
           "$other": {
             ".validate": false
@@ -32,19 +42,19 @@
     "items" : {
       "$uid": {
         ".read" : true,
-        ".write": "auth != null && auth.uid == $uid && (!data.exists() || (!newData.exists() && !newData.parent().parent().child('details').hasChild($uid)))",
-        ".validate": "newData.hasChildren() && newData.parent().parent().child('regions').hasChild($uid)",
+        ".write": "auth.uid == $uid && newData.parent().parent().child('users').child($uid).child('restored').val() == now",
+        ".validate": "newData.hasChildren() && root.child('users').hasChild($uid)",
         "$regionId": {
-          ".indexOn": "timestamp",
+          ".indexOn": ["timestamp"],
           ".validate": "newData.hasChildren() && newData.parent().parent().parent().child('regions').child($uid).hasChild($regionId)",
           "$itemId": {
-            ".write": "auth != null && auth.uid == $uid && root.child('regions').child($uid).child($regionId).exists() && (newData.exists() || !root.child('details').child($uid).child($regionId).child($itemId).exists())",
+            ".write": "auth.uid == $uid && (newData.exists() || !root.child('details').child($uid).child($regionId).hasChild($itemId))",
             ".validate": "newData.hasChildren(['name', 'timestamp'])",
             "name": {
               ".validate": "newData.isString() && newData.val().length != 0"
             },
             "timestamp": {
-              ".validate": "data.exists() || !data.parent().parent().parent().exists() || newData.val() == now"
+              ".validate": "newData.isNumber()"
             },
             "$other": {
               ".validate": false
@@ -55,21 +65,21 @@
     },
     "details" : {
       "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid && (!data.exists() || !newData.exists())",
-        ".validate": "newData.hasChildren() && newData.parent().parent().child('items').hasChild($uid)",
+        ".read": "auth.uid == $uid",
+        ".write": "auth.uid == $uid && newData.parent().parent().child('users').child($uid).child('restored').val() == now",
+        ".validate": "newData.hasChildren() && root.child('users').hasChild($uid)",
         "$regionId": {
           ".validate": "newData.hasChildren() && newData.parent().parent().parent().child('items').child($uid).hasChild($regionId)",
           "$itemId": {
             ".read" : true,
-            ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.exists() && !root.child('items').child($uid).child($regionId).child($itemId).exists() && newData.parent().parent().parent().parent().child('items').child($uid).child($regionId).child($itemId).exists()",
-            ".validate": "newData.hasChildren()",
+            ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.exists() && !root.child('items').child($uid).child($regionId).hasChild($itemId)",
+            ".validate": "newData.hasChildren() && newData.parent().parent().parent().parent().child('items').child($uid).child($regionId).hasChild($itemId)",
             "fields": {
               ".validate": "newData.hasChildren()",
               "$field" : {
                 ".validate": "($field == 'Mnemonics' || $field == 'Introduction' || $field == 'Structure' || $field == 'Relations' || $field == 'Boundaries' || $field == 'Contents' || $field == 'Articulations' || $field == 'Attachments' || $field == 'Special structures' || $field == 'Nerve supply' || $field == 'Arterial supply' || $field == 'Venous drainage' || $field == 'Lymphatic drainage' || $field == 'Variants') && newData.hasChildren()",
                 "$entry" : {
-                  ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists()",
+                  ".write": "auth.uid == $uid",
                   ".validate": "newData.isString() && newData.val().length != 0"
                 }
               }
@@ -77,7 +87,7 @@
             "images": {
               ".validate": "newData.hasChildren()",
               "$image" : {
-                ".write": "auth != null && auth.uid == $uid && root.child('items').child($uid).child($regionId).child($itemId).exists()",
+                ".write": "auth != null && auth.uid == $uid",
                 ".validate": "newData.hasChildren(['url','filename'])",
                 "url" : {
                   ".validate": "newData.isString() && newData.val().length != 0"
@@ -100,32 +110,43 @@
     "nodes": {
       "$uid": {
         ".read": "true",
+        ".indexOn": ".value",
+        ".write": "auth.uid == $uid && newData.parent().parent().child('users').child($uid).child('restored').val() == now",
+        ".validate": "newData.hasChildren() && root.child('users').hasChild($uid)",
         "$nodeId": {
-          ".write": "auth != null && auth.uid == $uid && (newData.exists() || (!root.child('from').child($uid).hasChild($nodeId) && !root.child('to').child($uid).hasChild($nodeId)))",
+          ".write": "auth.uid == $uid && (newData.exists() || (!root.child('from').child($uid).hasChild($nodeId) && !root.child('to').child($uid).hasChild($nodeId)))",
           ".validate": "newData.isString() && newData.val().length != 0"
         }
       }
     },
     "from": {
       "$uid": {
+        ".read": "auth.uid == $uid",
+        ".write": "auth.uid == $uid && newData.parent().parent().child('users').child($uid).child('restored').val() == now",
+        ".validate": "newData.hasChildren() && root.child('users').hasChild($uid)",
         "$nodeId": {
           ".read": "true",
-          ".validate": "root.child('nodes').child($uid).hasChild($nodeId)",
+          ".indexOn": ".value",
+          ".validate": "newData.hasChildren() && newData.parent().parent().parent().child('nodes').child($uid).hasChild($nodeId)",
           "$otherNodeId": {
-            ".write": "auth != null && auth.uid == $uid && newData.exists() == newData.parent().parent().parent().parent().child('to').child($uid).child($otherNodeId).hasChild($nodeId)",
-            ".validate": "root.child('nodes').child($uid).hasChild($otherNodeId) && (data.exists() || newData.val() == now)"
+            ".write": "auth.uid == $uid && (newData.exists() || !newData.parent().parent().parent().parent().child('to').child($uid).child($otherNodeId).hasChild($nodeId))",
+            ".validate": "newData.isNumber() && newData.parent().parent().parent().parent().child('to').child($uid).child($otherNodeId).hasChild($nodeId)"
           }
         }
       }
     },
     "to": {
       "$uid": {
+        ".read": "auth.uid == $uid",
+        ".write": "auth.uid == $uid && newData.parent().parent().child('users').child($uid).child('restored').val() == now",
+        ".validate": "newData.hasChildren() && root.child('users').hasChild($uid)",
         "$nodeId": {
           ".read": "true",
-          ".validate": "root.child('nodes').child($uid).hasChild($nodeId)",
+          ".indexOn": ".value",
+          ".validate": "newData.hasChildren() && newData.parent().parent().parent().child('nodes').child($uid).hasChild($nodeId)",
           "$otherNodeId": {
-            ".write": "auth != null && auth.uid == $uid && newData.exists() == newData.parent().parent().parent().parent().child('from').child($uid).child($otherNodeId).hasChild($nodeId)",
-            ".validate": "root.child('nodes').child($uid).hasChild($otherNodeId) && (data.exists() || newData.val() == now)"
+            ".write": "auth.uid == $uid && (newData.exists() || !newData.parent().parent().parent().parent().child('from').child($uid).child($otherNodeId).hasChild($nodeId))",
+            ".validate": "newData.isNumber() && newData.parent().parent().parent().parent().child('from').child($uid).child($otherNodeId).hasChild($nodeId)"
           }
         }
       }

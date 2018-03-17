@@ -1,30 +1,59 @@
 <button type="button" class="btn float-right btn-danger btn-sm" (click)="restore()">Restore from this backup</button>
-<h3>{{ title }}</h3>
-<ul>
-	<li *ngFor="let region of regions">
-		<h4>{{ region.text }}</h4>
-		<ul>
-			<li *ngFor="let item of region.items">
-				<h5>{{ item.text }}</h5>
-				<ul>
-					<li *ngFor="let field of item.fields">
-						<h6>{{ field.key }}</h6>
-						<ul>
-							<li *ngFor="let entry of field.entries">
-								{{ entry.text }}
-							</li>
-						</ul>
-					</li>
-					<li *ngIf="item.images.length">
-						<h6>Images</h6>
-						<ul>
-							<li *ngFor="let image of item.images">
-								<a [href]="image.url">{{ image.filename }}</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-		</ul>
-	</li>
-</ul>
+<h2>{{ title }}</h2>
+<div *ngIf="displayObject.regions.length">
+	<h3>Regions</h3>
+	<ul>
+		<li *ngFor="let region of displayObject.regions">
+			<h4>{{ region.text }}</h4>
+			<ul>
+				<li *ngFor="let item of region.items">
+					<h5>{{ item.text }}</h5>
+					<ul>
+						<li *ngFor="let field of item.fields">
+							<h6>{{ field.key }}</h6>
+							<ul>
+								<li *ngFor="let entry of field.entries">
+									{{ entry.text }}
+								</li>
+							</ul>
+						</li>
+						<li *ngIf="item.images.length">
+							<h6>Images</h6>
+							<ul>
+								<li *ngFor="let image of item.images">
+									<a [href]="image.url">{{ image.filename }}</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+<div *ngIf="displayObject.nodes.length">
+	<h3>Courses</h3>
+	<ul>
+		<li *ngFor="let node of displayObject.nodes">
+			<h4>{{ node.text }}</h4>
+			<ul>
+				<li *ngIf="node.from.length">
+					<h6>From</h6>
+					<ul>
+						<li *ngFor="let otherNode of node.from">
+							{{ otherNode.text }}
+						</li>
+					</ul>
+				</li>
+				<li *ngIf="node.to.length">
+					<h6>To</h6>
+					<ul>
+						<li *ngFor="let otherNode of node.to">
+							{{ otherNode.text }}
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>

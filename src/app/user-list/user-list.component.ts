@@ -26,15 +26,15 @@ export class UserListComponent {
   edit = false;
 
   profilesObservable: Observable<Profiles> = Observable
-    .combineLatest(this.auth.authState, this.db.list('users', ref => ref.orderByValue()).snapshotChanges())
+    .combineLatest(this.auth.authState, this.db.list('users', ref => ref.orderByChild('name')).snapshotChanges())
     .map(([user, snaps]) => {
       const profiles: Profiles = {
-        others: []
+        others: [],
       };
       snaps.forEach(snap => {
         const profile: Profile = {
           id: snap.key,
-          name: snap.payload.val()
+          name: snap.payload.child('name').val(),
         };
         if (user && user.uid === profile.id) {
           profiles.mine = profile;
@@ -52,7 +52,7 @@ export class UserListComponent {
     });
 
   update(userId: string, profileName: string) {
-    this.db.database.ref('users').child(userId).set(profileName);
+    this.db.database.ref('users').child(userId).child('name').set(profileName);
   }
 
   delete(userId: string) {

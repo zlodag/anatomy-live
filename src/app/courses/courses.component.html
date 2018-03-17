@@ -1,6 +1,6 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-edit-button></app-edit-button>
-<h4 class="my-3">Nodes</h4>
+<h4 class="my-3">Courses</h4>
 <div *ngIf="nodes | async as nodes; else loading">
 	<div *ngIf="ownerService.owner && ownerService.edit; else noEdit">
 		<app-edit-string

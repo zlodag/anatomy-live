@@ -1,8 +1,8 @@
 <app-breadcrumbs></app-breadcrumbs>
 <app-backup
-  *ngIf="regions; else upload"
+  *ngIf="displayObject; else upload"
   title="File backup"
-  [regions]="regions"
+  [displayObject]="displayObject"
   [restoreObject]="restoreObject"
   ></app-backup>
 <ng-template #upload>

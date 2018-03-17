@@ -44,6 +44,9 @@ export interface RestoreObject {
   regions: any;
   items: any;
   details: any;
+  nodes: any;
+  from: any;
+  to: any;
 }
 
 export interface Node {

@@ -12,7 +12,7 @@ export class UserNameResolver implements Resolve<string> {
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<string> {
     const userId = route.paramMap.get('userId');
-    return this.db.database.ref('users').child(userId).once('value')
+    return this.db.database.ref('users').child(userId).child('name').once('value')
     .then(snap => {
       if (snap.exists()) {
         return snap.val();

@@ -65,7 +65,7 @@ export class BreadcrumbsComponent implements OnInit {
         if (this.route.snapshot.paramMap.has('nodeId')) {
           const nodeId = this.route.snapshot.paramMap.get('nodeId');
           this.crumbs.push({
-            label: 'Nodes',
+            label: 'Item',
             routerLink: null
           });
         }

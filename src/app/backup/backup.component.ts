@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase, DatabaseSnapshot } from 'angularfire2/database';
 import 'rxjs/add/operator/first';
+import { database } from 'firebase';
 
 interface Node {
   key: string;
@@ -36,12 +37,25 @@ interface RegionNode extends TimestampTextNode {
   items: ItemNode[];
 }
 
+interface CourseNode extends TextNode {
+  to: TimestampTextNode[];
+  from: TimestampTextNode[];
+}
+
+interface DisplayObject {
+  regions: RegionNode[];
+  nodes: CourseNode[];
+}
+
 interface FileReaderEventTarget extends EventTarget {
   result: string;
 }
 
 function sortByKey(a: Node, b: Node): number {
   return a.key > b.key ? 1 : a.key < b.key ? -1 : 0;
+}
+function sortByText(a: TextNode, b: TextNode): number {
+  return a.text > b.text ? 1 : a.text < b.text ? -1 : 0;
 }
 function sortByTimestamp(a: TimestampTextNode, b: TimestampTextNode): number {
   return a.timestamp - b.timestamp;
@@ -61,7 +75,7 @@ export class BackupComponent {
   ) {}
 
   @Input() title: string;
-  @Input() regions: RegionNode[];
+  @Input() displayObject: DisplayObject;
   @Input() restoreObject: RestoreObject;
 
   restore() {
@@ -69,15 +83,14 @@ export class BackupComponent {
       this.auth.authState.first().subscribe(user => {
         if (user && user.uid === this.route.snapshot.paramMap.get('userId')) {
           this.db.database.ref().update({
-            [`regions/${user.uid}`]: null,
-            [`items/${user.uid}`]: null,
-            [`details/${user.uid}`]: null,
-          })
-          .then(() => this.db.database.ref().update({
+              [`users/${user.uid}/restored`]: database.ServerValue.TIMESTAMP,
               [`regions/${user.uid}`]: this.restoreObject.regions,
               [`items/${user.uid}`]: this.restoreObject.items,
               [`details/${user.uid}`]: this.restoreObject.details,
-          }))
+              [`nodes/${user.uid}`]: this.restoreObject.nodes,
+              [`from/${user.uid}`]: this.restoreObject.from,
+              [`to/${user.uid}`]: this.restoreObject.to,
+          })
           .then(() => {
             alert('Successfully restored from backup file');
             this.router.navigate(['/', user.uid, 'regions']);
@@ -99,11 +112,14 @@ export class ServerBackupComponent {
 
   private backupData: DatabaseSnapshot = this.route.snapshot.data.serverBackup;
   timestamp = this.backupData.child('timestamp').val();
-  regions: RegionNode[] = fromSnap(this.backupData);
+  displayObject: DisplayObject = fromSnap(this.backupData);
   restoreObject: RestoreObject = {
     regions: this.backupData.child('regions').val(),
     items: this.backupData.child('items').val(),
     details: this.backupData.child('details').val(),
+    nodes: this.backupData.child('nodes').val(),
+    from: this.backupData.child('from').val(),
+    to: this.backupData.child('to').val(),
   };
 }
 
@@ -112,7 +128,7 @@ export class ServerBackupComponent {
 })
 export class FileBackupComponent {
 
-  regions: RegionNode[];
+  displayObject: DisplayObject;
 
   restoreObject: RestoreObject;
 
@@ -122,7 +138,7 @@ export class FileBackupComponent {
       reader.onload = event => {
         const json = (<FileReaderEventTarget>event.target).result;
         this.restoreObject = JSON.parse(json);
-        this.regions = fromParsed(this.restoreObject);
+        this.displayObject = fromParsed(this.restoreObject);
       };
       reader.readAsText(files[0]);
     }
@@ -130,8 +146,11 @@ export class FileBackupComponent {
 
 }
 
-function fromSnap(dataSnap: DatabaseSnapshot): RegionNode[] {
-  const regions: RegionNode[] = [];
+function fromSnap(dataSnap: DatabaseSnapshot): DisplayObject {
+  const displayObject: DisplayObject = {
+    regions: [],
+    nodes: [],
+  };
   if (dataSnap.exists) {
     dataSnap.child('regions').forEach(regionSnap => {
       const region: RegionNode = {
@@ -179,15 +198,50 @@ function fromSnap(dataSnap: DatabaseSnapshot): RegionNode[] {
         return false;
       });
       region.items = region.items.sort(sortByTimestamp);
-      regions.push(region);
+      displayObject.regions.push(region);
       return false;
     });
-    return regions.sort(sortByTimestamp);
+    displayObject.regions.sort(sortByTimestamp);
+    dataSnap.child('nodes').forEach(nodeSnap => {
+      const node: CourseNode = {
+        key: nodeSnap.key,
+        text: nodeSnap.val(),
+        from: [],
+        to: [],
+      };
+      dataSnap.child('from').child(nodeSnap.key).forEach(otherSnap => {
+        const other: TimestampTextNode = {
+          key: otherSnap.key,
+          text: dataSnap.child('nodes').child(otherSnap.key).val(),
+          timestamp: otherSnap.val(),
+        };
+        node.from.push(other);
+        return false;
+      });
+      node.from = node.from.sort(sortByTimestamp);
+      dataSnap.child('to').child(nodeSnap.key).forEach(otherSnap => {
+        const other: TimestampTextNode = {
+          key: otherSnap.key,
+          text: dataSnap.child('nodes').child(otherSnap.key).val(),
+          timestamp: otherSnap.val(),
+        };
+        node.to.push(other);
+        return false;
+      });
+      node.to = node.to.sort(sortByTimestamp);
+      displayObject.nodes.push(node);
+      return false;
+    });
+    displayObject.nodes.sort(sortByText);
   }
+  return displayObject;
 }
 
-function fromParsed(data: RestoreObject): RegionNode[] {
-  let regions: RegionNode[] = [];
+function fromParsed(data: RestoreObject): DisplayObject {
+  const displayObject: DisplayObject = {
+    regions: [],
+    nodes: [],
+  };
   if (data.regions) {
     Object.keys(data.regions).forEach(regionKey => {
       const region: RegionNode = {
@@ -244,9 +298,45 @@ function fromParsed(data: RestoreObject): RegionNode[] {
         });
         region.items = region.items.sort(sortByTimestamp);
       }
-      regions.push(region);
+      displayObject.regions.push(region);
     });
-    regions = regions.sort(sortByTimestamp);
+    displayObject.regions = displayObject.regions.sort(sortByTimestamp);
   }
-  return regions;
+  if (data.nodes) {
+    Object.keys(data.nodes).forEach(nodeKey => {
+      const node: CourseNode = {
+        key: nodeKey,
+        text: data.nodes[nodeKey],
+        from: [],
+        to: [],
+      };
+      if (data.from && nodeKey in data.from) {
+        const nodeLinksObj = data.from[nodeKey];
+        Object.keys(nodeLinksObj).forEach(otherNodeKey => {
+          const other: TimestampTextNode = {
+            key: otherNodeKey,
+            text: data.nodes[otherNodeKey],
+            timestamp: nodeLinksObj[otherNodeKey],
+          };
+          node.from.push(other);
+        });
+        node.from = node.from.sort(sortByTimestamp);
+      }
+      if (data.to && nodeKey in data.to) {
+        const nodeLinksObj = data.to[nodeKey];
+        Object.keys(nodeLinksObj).forEach(otherNodeKey => {
+          const other: TimestampTextNode = {
+            key: otherNodeKey,
+            text: data.nodes[otherNodeKey],
+            timestamp: nodeLinksObj[otherNodeKey],
+          };
+          node.to.push(other);
+        });
+        node.to = node.to.sort(sortByTimestamp);
+      }
+      displayObject.nodes.push(node);
+    });
+    displayObject.nodes.sort(sortByText);
+  }
+  return displayObject;
 }
